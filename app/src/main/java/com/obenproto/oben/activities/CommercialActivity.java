@@ -57,7 +57,8 @@ public class CommercialActivity extends Activity {
 
     public void showAlert() {
         AlertDialog.Builder builder = new AlertDialog.Builder(CommercialActivity.this);
-        builder.setTitle("All phrases will be deleted unless you record at least 3 phrases and save");
+        builder.setTitle("Cancel Avatar");
+        builder.setMessage("You may return here and complete your avatar at any time.");
         builder.setCancelable(true);
         builder.setPositiveButton("Yes, Cancel",
                 new DialogInterface.OnClickListener() {

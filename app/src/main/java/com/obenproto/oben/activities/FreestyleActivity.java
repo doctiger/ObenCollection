@@ -3,11 +3,12 @@ package com.obenproto.oben.activities;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageButton;
@@ -19,7 +20,7 @@ import android.widget.Toast;
 import com.obenproto.oben.R;
 import com.obenproto.oben.api.ObenAPIClient;
 import com.obenproto.oben.api.ObenAPIService;
-import com.obenproto.oben.response.LoginResponse;
+import com.obenproto.oben.response.ObenApiResponse;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.RequestBody;
 
@@ -37,6 +38,8 @@ public class FreestyleActivity extends Activity {
     RelativeLayout start;
     RelativeLayout stop;
     ProgressBar progressBar;
+    SharedPreferences pref;
+    int userId = 0;
     private static String filePath;
     private static MediaRecorder mediaRecorder;
 
@@ -52,6 +55,10 @@ public class FreestyleActivity extends Activity {
         stop.setVisibility(View.GONE);
 
         filePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/iPhoneRecVoice.wav";
+
+        pref = PreferenceManager.getDefaultSharedPreferences(this);
+        userId = pref.getInt("userID", 0);
+        Log.d("userID", String.valueOf(pref.getInt("userID", 0)));
 
         ImageButton start_rec = (ImageButton) findViewById(R.id.btnStart);
         start_rec.setOnTouchListener(new View.OnTouchListener() {
@@ -100,7 +107,8 @@ public class FreestyleActivity extends Activity {
 
     public void showAlert() {
         AlertDialog.Builder builder = new AlertDialog.Builder(FreestyleActivity.this);
-        builder.setTitle("All phrases will be deleted unless you record at least 3 phrases and save");
+        builder.setTitle("Cancel Avatar");
+        builder.setMessage("You may return here and complete your avatar at any time.");
         builder.setCancelable(true);
         builder.setPositiveButton("Yes, Cancel",
                 new DialogInterface.OnClickListener() {
@@ -118,11 +126,6 @@ public class FreestyleActivity extends Activity {
                     }
                 });
         AlertDialog alertDialog = builder.create();
-        Display display = getWindowManager().getDefaultDisplay();
-        int width = (int) (display.getWidth() * 0.5);
-        int height = (int) (display.getHeight() * 0.5);
-        alertDialog.getWindow().setLayout(width, height);
-        Log.d(String.valueOf(width), String.valueOf(height));
         alertDialog.show();
     }
 
@@ -136,14 +139,14 @@ public class FreestyleActivity extends Activity {
             mediaRecorder.setAudioChannels(1);
             mediaRecorder.setAudioSource(MediaRecorder.AudioSource.DEFAULT);
             mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.DEFAULT);
-            mediaRecorder.setOutputFile(filePath);
             mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
             mediaRecorder.setAudioSamplingRate(48000);
             mediaRecorder.prepare();
+            mediaRecorder.setOutputFile(filePath);
         } catch (Exception e) {
             e.printStackTrace();
         }
-//        mediaRecorder.start();
+        mediaRecorder.start();
     }
 
     public void stopRecording(View view) {
@@ -152,28 +155,30 @@ public class FreestyleActivity extends Activity {
         progressBar.setVisibility(View.VISIBLE);
         Log.d("Recorder", "Stop recording");
 
-//        mediaRecorder.stop();
-//        mediaRecorder.release();
-//        mediaRecorder = null;
+        mediaRecorder.stop();
+        mediaRecorder.release();
+        mediaRecorder = null;
 
         String str = "/storage/emulated/0/iPhoneRecVoice1.wav";
-        File audioFileName = new File(str);
+        Log.d("audio file path : ", filePath);
+        File audioFileName = new File(filePath);
         RequestBody requestBody = RequestBody.create(MediaType.parse("audio/wav"), audioFileName);
-        onSaveUserAvatarRequest(1, 1, requestBody, 1);
+        onSaveUserAvatarRequest(userId, 1, requestBody);
     }
 
     // Recall of save user avatar
-    public void onSaveUserAvatarRequest(int userId, int recordId, RequestBody audioFile, int avatarId) {
+    public void onSaveUserAvatarRequest(int userId, int recordId, RequestBody audioFile) {
         // save user avatar
         ObenAPIService client = ObenAPIClient.newInstance(ObenAPIService.class);
-        Call<LoginResponse> call = client.saveUserAvatar(9, 1, audioFile, avatarId);
+        Call<ObenApiResponse> call = client.saveUserAvatar(userId, recordId, audioFile);
 
-        call.enqueue(new Callback<LoginResponse>() {
+        call.enqueue(new Callback<ObenApiResponse>() {
             @Override
-            public void onResponse(Response<LoginResponse> response, Retrofit retrofit) {
+            public void onResponse(Response<ObenApiResponse> response, Retrofit retrofit) {
                 progressBar.setVisibility(View.GONE);
                 if (response.code() == HttpURLConnection.HTTP_OK) { // success
                     Log.v("Upload", "Success");
+                    Toast.makeText(getApplicationContext(), "Upload Success", Toast.LENGTH_LONG).show();
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("Status", "Authorization Error");

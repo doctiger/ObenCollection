@@ -18,7 +18,7 @@ import android.widget.Toast;
 import com.obenproto.oben.R;
 import com.obenproto.oben.api.ObenAPIClient;
 import com.obenproto.oben.api.ObenAPIService;
-import com.obenproto.oben.response.LoginResponse;
+import com.obenproto.oben.response.ObenApiResponse;
 
 import java.net.HttpURLConnection;
 
@@ -100,13 +100,13 @@ public class ObenUserLogin extends Activity {
     public void onUserLogin(final String email, String password, String displayName) {
         // Email login.
         ObenAPIService client = ObenAPIClient.newInstance(ObenAPIService.class);
-        Call<LoginResponse> call = client.userLogin(email, password, displayName);
+        Call<ObenApiResponse> call = client.userLogin(email, password, displayName);
 
-        call.enqueue(new Callback<LoginResponse>() {
+        call.enqueue(new Callback<ObenApiResponse>() {
             @Override
-            public void onResponse(Response<LoginResponse> response, Retrofit retrofit) {
+            public void onResponse(Response<ObenApiResponse> response, Retrofit retrofit) {
                 if (response.code() == HttpURLConnection.HTTP_OK) { // success
-                    LoginResponse response_result = response.body();
+                    ObenApiResponse response_result = response.body();
                     userLogin = response_result.User.getLogin();
                     userID = response_result.User.getUserId();
                     userDisplayName = response_result.User.getUserDisplayName();

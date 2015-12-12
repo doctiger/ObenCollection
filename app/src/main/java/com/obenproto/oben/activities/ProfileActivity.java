@@ -15,7 +15,7 @@ import android.widget.Toast;
 import com.obenproto.oben.R;
 import com.obenproto.oben.api.ObenAPIClient;
 import com.obenproto.oben.api.ObenAPIService;
-import com.obenproto.oben.response.LoginResponse;
+import com.obenproto.oben.response.ObenApiResponse;
 
 import java.net.HttpURLConnection;
 
@@ -55,13 +55,13 @@ public class ProfileActivity extends Activity {
     public void onUserAvatar(int userId) {
         // Email login.
         ObenAPIService client = ObenAPIClient.newInstance(ObenAPIService.class);
-        Call<LoginResponse> call = client.getUserAvatar(userId);
+        Call<ObenApiResponse> call = client.getUserAvatar(userId);
 
-        call.enqueue(new Callback<LoginResponse>() {
+        call.enqueue(new Callback<ObenApiResponse>() {
             @Override
-            public void onResponse(Response<LoginResponse> response, Retrofit retrofit) {
+            public void onResponse(Response<ObenApiResponse> response, Retrofit retrofit) {
                 if (response.code() == HttpURLConnection.HTTP_OK) { // success
-                    LoginResponse response_result = response.body();
+                    ObenApiResponse response_result = response.body();
                     int avatarId = response_result.UserAvatar.getAvatarId();
                     Log.d("getUserAvatar Sucess:", String.valueOf(avatarId));
 
@@ -90,13 +90,13 @@ public class ProfileActivity extends Activity {
     public void onUserLogout() {
         // Email login.
         ObenAPIService client = ObenAPIClient.newInstance(ObenAPIService.class);
-        Call<LoginResponse> call = client.userLogout();
+        Call<ObenApiResponse> call = client.userLogout();
 
-        call.enqueue(new Callback<LoginResponse>() {
+        call.enqueue(new Callback<ObenApiResponse>() {
             @Override
-            public void onResponse(Response<LoginResponse> response, Retrofit retrofit) {
+            public void onResponse(Response<ObenApiResponse> response, Retrofit retrofit) {
                 if (response.code() == HttpURLConnection.HTTP_OK) { // success
-                    LoginResponse response_result = response.body();
+                    ObenApiResponse response_result = response.body();
                     String message = response_result.User.getMessage();
                     Log.d("Logout Sucess:", message);
 
@@ -131,15 +131,13 @@ public class ProfileActivity extends Activity {
         progressBar.setVisibility(View.VISIBLE);
 
         ObenAPIService client = ObenAPIClient.newInstance(ObenAPIService.class);
-        Call<LoginResponse> call = client.userLogin(email, password, "Petro Rington");
+        Call<ObenApiResponse> call = client.userLogin(email, password, "Petro Rington");
 
-        call.enqueue(new Callback<LoginResponse>() {
+        call.enqueue(new Callback<ObenApiResponse>() {
             @Override
-            public void onResponse(Response<LoginResponse> response, Retrofit retrofit) {
+            public void onResponse(Response<ObenApiResponse> response, Retrofit retrofit) {
                 if (response.code() == HttpURLConnection.HTTP_OK) { // success
                     progressBar.setVisibility(View.GONE);
-                    // Get the user avatar ID.
-//                    onUserAvatar(pref.getInt("userID", 0));
 
                     Log.d("User login Status", "Success");
                     userIDTxt.setText(String.valueOf(pref.getInt("userID", 0)));
