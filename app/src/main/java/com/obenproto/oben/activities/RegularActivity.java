@@ -106,14 +106,14 @@ public class RegularActivity extends Activity {
         temp.put(String.valueOf(0), phraseList.get(index).Phrase.getSentence());
         list.add(temp);
         for (int i = 1; i <= index; i++) {
-            temp.put(String.valueOf(i), phraseList.get(index-i).Phrase.getSentence());
+            temp.put(String.valueOf(i), phraseList.get((index-i)%34).Phrase.getSentence());
             list.add(temp);
         }
 
         adapter = new RegularListViewAdapter(context, list);
         listView.setAdapter(adapter);
 
-    }
+    }/**/
 
     public static void refreshListView() {
         activity.finish();
