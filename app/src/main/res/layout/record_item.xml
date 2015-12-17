@@ -30,7 +30,7 @@
             android:background="@drawable/button_border"
             android:text="Hear Sample"
             android:textColor="@color/colorBlue"
-            android:textSize="13dp" />
+            android:textSize="13sp" />
 
         <Button
             android:id="@+id/listenBtn"
@@ -42,7 +42,7 @@
             android:background="@drawable/button_border_black"
             android:text="LISTEN"
             android:textColor="@color/colorBlack"
-            android:textSize="13dp" />
+            android:textSize="13sp" />
 
         <Button
             android:id="@+id/recBtn"
@@ -53,6 +53,6 @@
             android:background="@drawable/button_border_red"
             android:text="REC"
             android:textColor="@color/colorRed"
-            android:textSize="13dp" />
+            android:textSize="13sp" />
     </RelativeLayout>
 </LinearLayout>

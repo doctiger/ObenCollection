@@ -23,23 +23,22 @@ public interface ObenAPIService {
     @FormUrlEncoded
     @POST("morphing/ws/MorphingService/loginUser")
     Call<ObenApiResponse> userLogin(@Field("userEmail") String userEmail,
-                                  @Field("userPassword") String userPassword,
-                                  @Field("userDisplayName") String userDisplayName);
+                                    @Field("userPassword") String userPassword);
 
-    ////  Recall of save user avatar ( ​updated since 1.0 release ​
+    ////  Recall of save user avatar ( ​updated since 1.0 release ​)
     @Multipart
     @POST("morphing/ws/MorphingService/saveUserAvatar")
     Call<ObenApiResponse> saveUserAvatar(@Part("userId") int userId,
-                                       @Part("recordId") int recordId,
-                                       @Part("audioFile") RequestBody audioFile);
+                                         @Part("recordId") int recordId,
+                                         @Part("audioFile") RequestBody audioFile,
+                                         @Part("avatarId") int avatarId);
 
-    //// Send the request for Regular User Avatar.
+    ////  Recall of save freestyle avatar ( ​updated since 1.0 release ) ​
     @Multipart
     @POST("morphing/ws/MorphingService/saveUserAvatar")
-    Call<ObenApiResponse> saveRegularAvatar(@Part("userId") int userId,
-                                          @Part("recordId") int recordId,
-                                          @Part("audioFile") RequestBody audioFile,
-                                          @Part("avatarId") int avatarId);
+    Call<ObenApiResponse> saveFreestyleAvatar(@Part("userId") int userId,
+                                              @Part("recordId") int recordId,
+                                              @Part("audioFile") RequestBody audioFile);
 
     ////    Recall of user avatar
     @GET("morphing/ws/MorphingService/getUserAvatar/{userId}")
@@ -54,6 +53,6 @@ public interface ObenAPIService {
     Call<ObenApiResponse> getAvatarData(@Path("avatarId") int avatarId);
 
     ////    Recall of phrase data
-    @GET("morphing/ws/MorphingService/getPhrases")
-    Call<List<ObenApiResponse>> getPhraseData();
+    @GET("morphing/ws/MorphingService/getPhrases/mode/{level}")
+    Call<List<ObenApiResponse>> getPhraseData(@Path("level") int level);
 }

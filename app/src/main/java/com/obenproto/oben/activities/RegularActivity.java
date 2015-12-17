@@ -33,6 +33,9 @@ import retrofit.Response;
 import retrofit.Retrofit;
 
 public class RegularActivity extends Activity {
+
+    public static int LIMIT_NUM = 36;
+    public static int REGULAR_PHRASES_COUNT = 0;
     public static Context context;
     public static ArrayList<HashMap<String, String>> list;
     public static RegularListViewAdapter adapter;
@@ -103,17 +106,19 @@ public class RegularActivity extends Activity {
 
     public static void populateList(int index) {
         HashMap<String, String> temp = new HashMap<>();
+
         temp.put(String.valueOf(0), phraseList.get(index).Phrase.getSentence());
         list.add(temp);
+
         for (int i = 1; i <= index; i++) {
-            temp.put(String.valueOf(i), phraseList.get((index-i)%34).Phrase.getSentence());
+            temp.put(String.valueOf(i), phraseList.get((index-i)%REGULAR_PHRASES_COUNT).Phrase.getSentence());
             list.add(temp);
         }
 
         adapter = new RegularListViewAdapter(context, list);
         listView.setAdapter(adapter);
 
-    }/**/
+    }
 
     public static void refreshListView() {
         activity.finish();
@@ -123,7 +128,8 @@ public class RegularActivity extends Activity {
     //// Get the all avatar data for regular.
     public void onAvatarData() {
         ObenAPIService client = ObenAPIClient.newInstance(ObenAPIService.class);
-        Call<ObenApiResponse> call = client.getAvatarData(pref.getInt("RegularAvatarID", 0));
+        Log.d("avatarID ", String.valueOf(pref.getInt("avatarID", 0)));
+        Call<ObenApiResponse> call = client.getAvatarData(pref.getInt("avatarID", 0));
 
         call.enqueue(new Callback<ObenApiResponse>() {
 
@@ -133,7 +139,6 @@ public class RegularActivity extends Activity {
                     ObenApiResponse response_result = response.body();
                     recordMap = (Map) response_result.Avatar;
                     Log.d("debug avatar List", String.valueOf(recordMap.get("record" + 5)));
-
 
                     progressBar.setVisibility(View.GONE);
                     if (recordMap.get("status") == null) {
@@ -150,7 +155,6 @@ public class RegularActivity extends Activity {
                         populateList(0);
                         Toast.makeText(getApplicationContext(), "Avatar with id 4 not found", Toast.LENGTH_LONG).show();
                     }
-
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("Status", "Authorization Error");
@@ -169,15 +173,18 @@ public class RegularActivity extends Activity {
         });
     }
 
+    // get all phrase sentences
     public void onGetPhrases() {
         ObenAPIService client = ObenAPIClient.newInstance(ObenAPIService.class);
-        Call<List<ObenApiResponse>> call = client.getPhraseData();
+        Call<List<ObenApiResponse>> call = client.getPhraseData(1);
 
         call.enqueue(new Callback<List<ObenApiResponse>>() {
             @Override
             public void onResponse(Response<List<ObenApiResponse>> response, Retrofit retrofit) {
                 if (response.code() == HttpURLConnection.HTTP_OK) { // success
                     phraseList = response.body();
+                    REGULAR_PHRASES_COUNT = phraseList.size();
+                    Log.d("phrases count", String.valueOf(phraseList.size()));
 
                     onAvatarData();
 

@@ -1,8 +1,9 @@
 package com.obenproto.oben.adapters;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Environment;
 import android.preference.PreferenceManager;
@@ -41,15 +42,13 @@ public class RegularListViewAdapter extends BaseAdapter {
     public LayoutInflater mInflater;
     boolean isRecording = false;
     boolean isUploading = false;
+    boolean isAudioPlaying = false;
     SharedPreferences pref;
     SharedPreferences.Editor editor;
     MediaRecorder mediaRecorder;
     String filePath, recordedFilePath, sampleFilePath;
     String listenAudioUrl, sampleAdudioUrl;
     int record_index = 0;
-
-    public static final int DIALOG_DOWNLOAD_PROGRESS = 1;
-    private ProgressDialog progressDialog;
 
     public RegularListViewAdapter(Context context, ArrayList<HashMap<String, String>> list) {
         super();
@@ -92,43 +91,109 @@ public class RegularListViewAdapter extends BaseAdapter {
         if (position == 0) {
             listenBtn.setEnabled(false);
             listenBtn.setAlpha(0.5f);
+
+            if (list.size() > RegularActivity.LIMIT_NUM) {
+                recBtn.setEnabled(false);
+                recBtn.setAlpha(0.5f);
+            }
         }
 
-        HashMap<String, String> map = list.get(position);
+        final HashMap<String, String> map = list.get(position);
         descriptionTxt.setText(map.get(String.valueOf(position)));
-        Log.d("debug description text", map.get(String.valueOf(position)));
+        Log.d("d-debug description text", map.get(String.valueOf(position)));
+
 
         hearSampleBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isUploading) return;        // set the button enable to false for uploading.
-                if (isRecording) return;        // recognize recording button.
+                if (isUploading) return;
+                if (isRecording) return;
+                if (isAudioPlaying) return;
 
-                sampleAdudioUrl = String.valueOf(RegularActivity.phraseList.get(position-1).Phrase.getExample());
-                Log.d("debug sample record url", sampleAdudioUrl);
-                Log.i("Debug Hear Sample", String.valueOf(position));
+                Log.d("d- phrase", String.valueOf(RegularActivity.phraseList.get(0)) + String.valueOf(list.size()) + " - " + String.valueOf(position));
+                sampleAdudioUrl = String.valueOf(RegularActivity.phraseList.get(list.size()-position-1).Phrase.getExample());
+
+                // Play the sample audio file from the remote url.
+                final MediaPlayer mediaPlayer = new MediaPlayer();
+                mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                    @Override
+                    public boolean onError(MediaPlayer mp, int what, int extra) {
+                        return false;
+                    }
+                });
+                mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    @Override
+                    public void onPrepared(MediaPlayer mp) {
+                        RegularActivity.progressBar.setVisibility(View.GONE);
+                        mediaPlayer.start();
+                        isAudioPlaying = false;
+                    }
+                });
+
+                try {
+                    mediaPlayer.setDataSource(sampleAdudioUrl);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                mediaPlayer.prepareAsync();
+                RegularActivity.progressBar.setVisibility(View.VISIBLE);
+                isAudioPlaying = true;
+
+                Log.d("d-debug sample record url", sampleAdudioUrl);
             }
         });
 
         listenBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isUploading) return;        // set the button enable to false for uploading.
-                if (isRecording) return;        // recognize recording button.
+                if (isUploading) return;
+                if (isRecording) return;
+                if (isAudioPlaying) return;
 
-                Log.d("debug record url ", String.valueOf(RegularActivity.recordMap.get("record" + position)));
-                Log.i("Debug Listen", String.valueOf(position));
+                listenAudioUrl = RegularActivity.recordMap.get("record" + (list.size()-position)).toString();
+
+                // Play the recorded audio file from the remote url.
+                final MediaPlayer mediaPlayer = new MediaPlayer();
+                mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                    @Override
+                    public boolean onError(MediaPlayer mp, int what, int extra) {
+                        return false;
+                    }
+                });
+                mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    @Override
+                    public void onPrepared(MediaPlayer mp) {
+                        RegularActivity.progressBar.setVisibility(View.GONE);
+                        mediaPlayer.start();
+                        isAudioPlaying = false;
+                        Log.d("d-starting recorded audio paying", listenAudioUrl);
+                    }
+                });
+
+                try {
+                    mediaPlayer.setDataSource(listenAudioUrl);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                mediaPlayer.prepareAsync();
+                RegularActivity.progressBar.setVisibility(View.VISIBLE);
+                isAudioPlaying = true;
+
+                Log.d("d-debug record url ", listenAudioUrl);
             }
         });
 
         recBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isUploading) return;                                    // set the button enable to false for uploading.
+                if (isUploading) return;
+                if (isRecording && position != record_index) return;
+                if (isAudioPlaying) return;
 
-                if (isRecording && position != record_index) return;        // recognize recording button.
-                Log.d("Debug Recording Flag", String.valueOf(isRecording));
-                Log.d("Debug Recording position", String.valueOf(position) + "-" + String.valueOf(record_index));
+                Log.d("d-Debug Recording Flag", String.valueOf(isRecording));
+                Log.d("d-Debug Recording position", String.valueOf(position) + "-" + String.valueOf(record_index));
 
                 recBtn.setText(isRecording ? "REC" : "STOP");
                 isRecording = !isRecording;
@@ -144,10 +209,8 @@ public class RegularListViewAdapter extends BaseAdapter {
 
                 } else {
                     int btnIndex = position;
-                    if (position == 0)
-                        btnIndex = RegularActivity.recordcount + 1;
 
-                    stopRecording(btnIndex);
+                    stopRecording(list.size()-btnIndex);
                 }
 
             }
@@ -156,58 +219,11 @@ public class RegularListViewAdapter extends BaseAdapter {
         return convertView;
     }
 
-//    // Download the audio file and save to device.
-//    public void downloadAudioFile(String audioUrl, String fileName) throws IOException {
-//        URL url = new URL(audioUrl);
-//        URLConnection ucon = url.openConnection();
-//        ucon.connect();
-//
-//        int lengthOfFile = ucon.getContentLength();
-//        Log.d("Length of file ", String.valueOf(lengthOfFile));
-//
-//        InputStream is = new BufferedInputStream(url.openStream());
-//        OutputStream os = new FileOutputStream(fileName);
-//
-//        byte data[] = new byte[1024];
-//
-//        long total = 0, count = 0;
-//
-//        while ((count = is.read(data)) != -1) {
-//            total += count;
-//            downloadAudioFile();
-//        }
-//
-//
-//    }
-//
-//    @Override
-//    @Deprecated
-//    protected Dialog onCreateDialog(int id) {
-//        switch (id) {
-//            case DIALOG_DOWNLOAD_PROGRESS:
-//                progressDialog = new ProgressDialog(RegularActivity.activity);
-//                progressDialog.setMessage("Preparing file ...");
-//                progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-//                progressDialog.setCancelable(false);
-//                progressDialog.show();
-//
-//                return progressDialog;
-//            default:
-//                return null;
-//        }
-//    }
-
     // Upload the recorded audio file.
     public void onSaveRegularAvatar(int userId, final int recordId, RequestBody audioFile, final int avatarId) {
         ObenAPIService client = ObenAPIClient.newInstance(ObenAPIService.class);
 
-        Call<ObenApiResponse> call;
-        if (avatarId == 0) {
-            call = client.saveUserAvatar(userId, recordId, audioFile);
-        } else {
-            call = client.saveRegularAvatar(userId, recordId, audioFile, avatarId);
-        }
-
+        Call<ObenApiResponse> call = client.saveUserAvatar(userId, recordId, audioFile, avatarId);;
         call.enqueue(new Callback<ObenApiResponse>() {
             @Override
             public void onResponse(Response<ObenApiResponse> response, Retrofit retrofit) {
@@ -217,30 +233,25 @@ public class RegularListViewAdapter extends BaseAdapter {
                     Log.v("Upload", "Success");
                     ObenApiResponse response_result = response.body();
 
-                    // save the avatarID to shared preference.
-                    if (avatarId == 0) {
-                        editor.putInt("RegularAvatarID", response_result.UserAvatar.getAvatarId());
-                        editor.commit();
-                    }
-                    Log.d("debug RegularAvatarID ", String.valueOf(response_result.UserAvatar.getAvatarId()));
-
                     if (record_index == 0) {
                         // Refresh the listview.
                         RegularActivity.refreshListView();
+                        Log.d("d-d- upload success", response_result.UserAvatar.getRecordURL());
                         Toast.makeText(cont_, "Upload Success", Toast.LENGTH_LONG).show();
 
                     } else {
+                        Log.d("d- change success", response_result.UserAvatar.getRecordURL());
                         Toast.makeText(cont_, "Change Success", Toast.LENGTH_LONG).show();
                     }
-                    Log.d("debug record ID ", String.valueOf(recordId));
+                    Log.d("d-debug record ID ", String.valueOf(recordId));
 
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
-                    Log.d("Status", "Authorization Error");
+                    Log.d("d-Status", "Authorization Error");
                     Toast.makeText(cont_, "Http Unauthorized", Toast.LENGTH_LONG).show();
 
                 } else {
-                    Log.d("Status", "failure");
+                    Log.d("d-Status", "failure");
                     Toast.makeText(cont_, "Server Connection Failure", Toast.LENGTH_LONG).show();
                 }
             }
@@ -252,37 +263,38 @@ public class RegularListViewAdapter extends BaseAdapter {
         });
     }
 
+    // Start the audio record
     public void startRecording() throws IOException {
-        Log.d("Recorder", "Start recording");
+        Log.d("d-Recorder", "Start recording");
 
         mediaRecorder = new MediaRecorder();
-        mediaRecorder.setAudioChannels(1);
-        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.DEFAULT);
+        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.VOICE_RECOGNITION);
         mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.DEFAULT);
-        mediaRecorder.setOutputFile(filePath);
-        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+        mediaRecorder.setAudioEncodingBitRate(160 * 1024);
         mediaRecorder.setAudioSamplingRate(48000);
+        mediaRecorder.setOutputFile(filePath);
         mediaRecorder.prepare();
-//        mediaRecorder.start();
+        mediaRecorder.start();
     }
 
     public void stopRecording(int btnIndex) {
         RegularActivity.progressBar.setVisibility(View.VISIBLE);
         isUploading = true;
-        Log.d("Recorder", "Stop recording");
+        Log.d("d-Recorder", "Stop recording");
 
-//        mediaRecorder.stop();
-//        mediaRecorder.release();
-//        mediaRecorder = null;
+        mediaRecorder.stop();
+        mediaRecorder.release();
+        mediaRecorder = null;
 
         String str = "/storage/emulated/0/iPhoneRecVoice1.wav";
-        Log.d("audio file path : ", filePath);
-        File audioFileName = new File(str);
+        Log.d("d-audio file path : ", filePath);
+        File audioFileName = new File(filePath);
         RequestBody requestBody = RequestBody.create(MediaType.parse("audio/wav"), audioFileName);
         onSaveRegularAvatar(pref.getInt("userID", 0),
                 btnIndex,
                 requestBody,
-                pref.getInt("RegularAvatarID", 0));
+                pref.getInt("avatarID", 0));
 
     }
 }

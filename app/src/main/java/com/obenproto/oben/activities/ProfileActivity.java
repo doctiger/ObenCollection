@@ -41,18 +41,16 @@ public class ProfileActivity extends Activity {
         editor = pref.edit();
 
         progressBar = (ProgressBar)findViewById(R.id.progressBar);
-
-        // User login
-        onUserLogin(pref.getString("userEmail", ""), "ObenSesame");
-
         userIDTxt = (TextView)findViewById(R.id.userIDLbl);
         avatarIDTxt = (TextView)findViewById(R.id.avatarIDLbl);
         userEmailTxt = (TextView)findViewById(R.id.userEmailLbl);
 
+        // User login
+        onUserLogin(pref.getString("userEmail", ""), "ObenSesame");
     }
 
     // Recall of user avatar.
-    public void onUserAvatar(int userId) {
+    public void onGetUserAvatar(int userId) {
         // Email login.
         ObenAPIService client = ObenAPIClient.newInstance(ObenAPIService.class);
         Call<ObenApiResponse> call = client.getUserAvatar(userId);
@@ -63,11 +61,36 @@ public class ProfileActivity extends Activity {
                 if (response.code() == HttpURLConnection.HTTP_OK) { // success
                     ObenApiResponse response_result = response.body();
                     int avatarId = response_result.UserAvatar.getAvatarId();
-                    Log.d("getUserAvatar Sucess:", String.valueOf(avatarId));
+                    Log.d("avatar ID ", String.valueOf(avatarId));
 
                     // Save the avatar ID to shared preference.
                     editor.putInt("avatarID", avatarId);
+                    editor.commit();
+
+                    ///////////////////////////////////////////////////////////
+                    progressBar.setVisibility(View.GONE);
+
+                    userIDTxt.setText(String.valueOf(pref.getInt("userID", 0)));
                     avatarIDTxt.setText(String.valueOf(avatarId));
+                    userEmailTxt.setText(pref.getString("userEmail", ""));
+
+                    TextView setupAvatar = (TextView)findViewById(R.id.setUpAvatarLbl);
+                    setupAvatar.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent intent = new Intent(ProfileActivity.this, OptionActivity.class);
+                            startActivity(intent);
+                        }
+                    });
+
+                    TextView logoutTxt = (TextView)findViewById(R.id.logoutLbl);
+                    logoutTxt.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            onUserLogout();
+                        }
+                    });
+
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("Status", "Authorization Error");
@@ -131,35 +154,16 @@ public class ProfileActivity extends Activity {
         progressBar.setVisibility(View.VISIBLE);
 
         ObenAPIService client = ObenAPIClient.newInstance(ObenAPIService.class);
-        Call<ObenApiResponse> call = client.userLogin(email, password, "Petro Rington");
+        Call<ObenApiResponse> call = client.userLogin(email, password);
 
         call.enqueue(new Callback<ObenApiResponse>() {
             @Override
             public void onResponse(Response<ObenApiResponse> response, Retrofit retrofit) {
                 if (response.code() == HttpURLConnection.HTTP_OK) { // success
-                    progressBar.setVisibility(View.GONE);
+                    ObenApiResponse response_result = response.body();
 
-                    Log.d("User login Status", "Success");
-                    userIDTxt.setText(String.valueOf(pref.getInt("userID", 0)));
-                    avatarIDTxt.setText(String.valueOf(pref.getInt("avatarID", 0)));
-                    userEmailTxt.setText(pref.getString("userEmail", ""));
-
-                    TextView setupAvatar = (TextView)findViewById(R.id.setUpAvatarLbl);
-                    setupAvatar.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            Intent intent = new Intent(ProfileActivity.this, OptionActivity.class);
-                            startActivity(intent);
-                        }
-                    });
-
-                    TextView logoutTxt = (TextView)findViewById(R.id.logoutLbl);
-                    logoutTxt.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            onUserLogout();
-                        }
-                    });
+                    // Get the user avatar ID.
+                    onGetUserAvatar(response_result.User.getUserId());
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("User login Status", "Authorization Error");

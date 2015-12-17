@@ -54,7 +54,7 @@ public class FreestyleActivity extends Activity {
         progressBar.setVisibility(View.GONE);
         stop.setVisibility(View.GONE);
 
-        filePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/iPhoneRecVoice.wav";
+        filePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/ObenFreestyleRecord.wav";
 
         pref = PreferenceManager.getDefaultSharedPreferences(this);
         userId = pref.getInt("userID", 0);
@@ -136,13 +136,14 @@ public class FreestyleActivity extends Activity {
 
         try {
             mediaRecorder = new MediaRecorder();
-            mediaRecorder.setAudioChannels(1);
-            mediaRecorder.setAudioSource(MediaRecorder.AudioSource.DEFAULT);
+            mediaRecorder.reset();
+            mediaRecorder.setAudioSource(MediaRecorder.AudioSource.VOICE_RECOGNITION);
             mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.DEFAULT);
-            mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+            mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+            mediaRecorder.setAudioEncodingBitRate(160*1024);
             mediaRecorder.setAudioSamplingRate(48000);
-            mediaRecorder.prepare();
             mediaRecorder.setOutputFile(filePath);
+            mediaRecorder.prepare();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -152,7 +153,7 @@ public class FreestyleActivity extends Activity {
     public void stopRecording(View view) {
         start.setVisibility(View.VISIBLE);
         stop.setVisibility(View.GONE);
-        progressBar.setVisibility(View.VISIBLE);
+//        progressBar.setVisibility(View.VISIBLE);
         Log.d("Recorder", "Stop recording");
 
         mediaRecorder.stop();
@@ -163,14 +164,16 @@ public class FreestyleActivity extends Activity {
         Log.d("audio file path : ", filePath);
         File audioFileName = new File(filePath);
         RequestBody requestBody = RequestBody.create(MediaType.parse("audio/wav"), audioFileName);
-        onSaveUserAvatarRequest(userId, 1, requestBody);
+
+        // Upload the recorded audio file.
+//        onSaveUserAvatarRequest(userId, 1, requestBody);
     }
 
     // Recall of save user avatar
     public void onSaveUserAvatarRequest(int userId, int recordId, RequestBody audioFile) {
         // save user avatar
         ObenAPIService client = ObenAPIClient.newInstance(ObenAPIService.class);
-        Call<ObenApiResponse> call = client.saveUserAvatar(userId, recordId, audioFile);
+        Call<ObenApiResponse> call = client.saveFreestyleAvatar(userId, recordId, audioFile);
 
         call.enqueue(new Callback<ObenApiResponse>() {
             @Override

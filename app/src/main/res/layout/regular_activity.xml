@@ -24,18 +24,6 @@
             android:text="Cancel"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="#008DFF" />
-
-        <TextView
-            android:id="@+id/header1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_alignTop="@+id/cancelBtn"
-            android:layout_marginRight="5dp"
-            android:gravity="center_vertical"
-            android:text="Save Avatar"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="#008DFF" />
     </RelativeLayout>
 
     <RelativeLayout
