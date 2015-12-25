@@ -30,6 +30,7 @@ public class ProfileActivity extends Activity {
     SharedPreferences pref;
     SharedPreferences.Editor editor;
     ProgressBar progressBar;
+    TextView setupAvatar, logoutTxt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +45,23 @@ public class ProfileActivity extends Activity {
         userIDTxt = (TextView)findViewById(R.id.userIDLbl);
         avatarIDTxt = (TextView)findViewById(R.id.avatarIDLbl);
         userEmailTxt = (TextView)findViewById(R.id.userEmailLbl);
+
+        setupAvatar = (TextView) findViewById(R.id.setUpAvatarLbl);
+        setupAvatar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(ProfileActivity.this, OptionActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        logoutTxt = (TextView) findViewById(R.id.logoutLbl);
+        logoutTxt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onUserLogout();
+            }
+        });
 
         // User login
         onUserLogin(pref.getString("userEmail", ""), "ObenSesame");
@@ -67,30 +85,14 @@ public class ProfileActivity extends Activity {
                     editor.putInt("avatarID", avatarId);
                     editor.commit();
 
-                    ///////////////////////////////////////////////////////////
                     progressBar.setVisibility(View.GONE);
 
                     userIDTxt.setText(String.valueOf(pref.getInt("userID", 0)));
                     avatarIDTxt.setText(String.valueOf(avatarId));
                     userEmailTxt.setText(pref.getString("userEmail", ""));
 
-                    TextView setupAvatar = (TextView)findViewById(R.id.setUpAvatarLbl);
-                    setupAvatar.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            Intent intent = new Intent(ProfileActivity.this, OptionActivity.class);
-                            startActivity(intent);
-                        }
-                    });
-
-                    TextView logoutTxt = (TextView)findViewById(R.id.logoutLbl);
-                    logoutTxt.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            onUserLogout();
-                        }
-                    });
-
+                    setupAvatar.setEnabled(true);
+                    logoutTxt.setEnabled(true);
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("Status", "Authorization Error");
@@ -104,7 +106,15 @@ public class ProfileActivity extends Activity {
 
             @Override
             public void onFailure(Throwable t) {
+                userIDTxt.setText(String.valueOf(pref.getInt("userID", 0)));
+                avatarIDTxt.setText(String.valueOf(0));
+                userEmailTxt.setText(pref.getString("userEmail", ""));
+                progressBar.setVisibility(View.GONE);
 
+                setupAvatar.setEnabled(true);
+                logoutTxt.setEnabled(true);
+
+                Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -127,6 +137,9 @@ public class ProfileActivity extends Activity {
                     editor.putString("userEmail", "");
                     editor.putInt("userID", 0);
                     editor.putInt("avatarID", 0);
+                    editor.putInt("RegularAvatarID", 0);
+                    editor.putInt("CommercialAvatarID", 0);
+                    editor.putInt("FreestyleAvatarID", 0);
                     editor.commit();
 
                     // Go to the Login page.
@@ -145,22 +158,28 @@ public class ProfileActivity extends Activity {
 
             @Override
             public void onFailure(Throwable t) {
-
+                Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }
 
     public void onUserLogin(String email, String password) {
         progressBar.setVisibility(View.VISIBLE);
+        setupAvatar.setEnabled(false);
+        logoutTxt.setEnabled(false);
 
         ObenAPIService client = ObenAPIClient.newInstance(ObenAPIService.class);
-        Call<ObenApiResponse> call = client.userLogin(email, password);
+        Call<ObenApiResponse> call = client.userLogin(email, password, "Oben User");
 
         call.enqueue(new Callback<ObenApiResponse>() {
             @Override
             public void onResponse(Response<ObenApiResponse> response, Retrofit retrofit) {
                 if (response.code() == HttpURLConnection.HTTP_OK) { // success
                     ObenApiResponse response_result = response.body();
+
+                    int userId = response_result.User.getUserId();
+                    editor.putInt("userID", userId);
+                    editor.commit();
 
                     // Get the user avatar ID.
                     onGetUserAvatar(response_result.User.getUserId());
@@ -177,7 +196,7 @@ public class ProfileActivity extends Activity {
 
             @Override
             public void onFailure(Throwable t) {
-
+                Log.e("Upload", t.getMessage());
             }
         });
     }

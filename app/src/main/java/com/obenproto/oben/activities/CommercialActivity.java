@@ -45,7 +45,9 @@ public class CommercialActivity extends Activity {
     public static List<ObenApiResponse> phraseList;
     public static Activity activity = null;
     public static Map recordMap;
+    public static Map avatarMap;
     SharedPreferences pref;
+    SharedPreferences.Editor editor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +58,7 @@ public class CommercialActivity extends Activity {
 
         context = this.getBaseContext();
         pref = PreferenceManager.getDefaultSharedPreferences(this);
+        editor = pref.edit();
 
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         progressBar.setVisibility(View.VISIBLE);
@@ -127,20 +130,63 @@ public class CommercialActivity extends Activity {
         activity.startActivity(activity.getIntent());
     }
 
-    //// Get the all avatar data for regular.
-    public void onAvatarData() {
+    // Get the avatarID for commercial
+    public void onCommercialAvatarID(int userId) {
+
         ObenAPIService client = ObenAPIClient.newInstance(ObenAPIService.class);
-        Call<ObenApiResponse> call = client.getAvatarData(pref.getInt("avatarID", 0));
+        Call<List<ObenApiResponse>> call = client.getCommercialAvatars(userId);
+
+        call.enqueue(new Callback<List<ObenApiResponse>>() {
+            @Override
+            public void onResponse(Response<List<ObenApiResponse>> response, Retrofit retrofit) {
+                if (response.code() == HttpURLConnection.HTTP_OK) {
+
+                    if (response.body().size() == 0) {
+                        editor.putInt("CommercialAvatarID", 0);
+
+                    } else {
+                        ObenApiResponse response_result = response.body().get(0);
+                        avatarMap = (Map) response_result.Avatar;
+
+                        if (avatarMap != null) {
+                            editor.putInt("CommercialAvatarID", Float.valueOf(avatarMap.get("avatarId").toString()).intValue());
+
+                        } else {
+                            editor.putInt("CommercialAvatarID", 0);
+                        }
+                    }
+
+                    editor.commit();
+                    Log.d("Commercial avatarID", String.valueOf(pref.getInt("CommercialAvatarID", 0)));
+
+                    // Get the avatar data.
+                    onAvatarData(pref.getInt("CommercialAvatarID", 0));
+
+                } else {
+                    Toast.makeText(getApplicationContext(), "Http Unauthorized", Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                Log.d("Commercial avtar ID", t.getMessage());
+                Toast.makeText(getApplicationContext(), "Failure", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    //// Get the all avatar data for Commercial.
+    public void onAvatarData(int avatarId) {
+        ObenAPIService client = ObenAPIClient.newInstance(ObenAPIService.class);
+        Call<ObenApiResponse> call = client.getAvatarData(avatarId);
 
         call.enqueue(new Callback<ObenApiResponse>() {
-
             @Override
             public void onResponse(Response<ObenApiResponse> response, Retrofit retrofit) {
                 if (response.code() == HttpURLConnection.HTTP_OK) { // success
                     ObenApiResponse response_result = response.body();
                     recordMap = (Map) response_result.Avatar;
                     Log.d("debug avatar List", String.valueOf(recordMap.get("record" + 5)));
-
 
                     progressBar.setVisibility(View.GONE);
                     if (recordMap.get("status") == null) {
@@ -189,7 +235,11 @@ public class CommercialActivity extends Activity {
                     Log.d("phrases count", String.valueOf(phraseList.size()));
 
                     // get the avatar data for show listview.
-                    onAvatarData();
+                    if (pref.getInt("CommercialAvatarID", 0) == 0) {
+                        onCommercialAvatarID(pref.getInt("userID", 0));
+                    } else {
+                        onAvatarData(pref.getInt("CommercialAvatarID", 0));
+                    }
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("Status", "Authorization Error");

@@ -151,7 +151,7 @@ public class RegularListViewAdapter extends BaseAdapter {
                 if (isRecording) return;
                 if (isAudioPlaying) return;
 
-                listenAudioUrl = RegularActivity.recordMap.get("record" + (list.size()-position)).toString();
+                listenAudioUrl = RegularActivity.recordMap.get("record" + (list.size() - position)).toString();
 
                 // Play the recorded audio file from the remote url.
                 final MediaPlayer mediaPlayer = new MediaPlayer();
@@ -210,7 +210,7 @@ public class RegularListViewAdapter extends BaseAdapter {
                 } else {
                     int btnIndex = position;
 
-                    stopRecording(list.size()-btnIndex);
+                    stopRecording(list.size() - btnIndex);
                 }
 
             }
@@ -223,7 +223,12 @@ public class RegularListViewAdapter extends BaseAdapter {
     public void onSaveRegularAvatar(int userId, final int recordId, RequestBody audioFile, final int avatarId) {
         ObenAPIService client = ObenAPIClient.newInstance(ObenAPIService.class);
 
-        Call<ObenApiResponse> call = client.saveUserAvatar(userId, recordId, audioFile, avatarId);;
+        Call<ObenApiResponse> call;
+        if (avatarId == 0) {
+            call = client.saveOriginalRegularUserAvatar(userId, recordId, audioFile);
+        } else {
+            call = client.saveRegularUserAvatar(userId, recordId, audioFile, avatarId);
+        }
         call.enqueue(new Callback<ObenApiResponse>() {
             @Override
             public void onResponse(Response<ObenApiResponse> response, Retrofit retrofit) {
@@ -232,6 +237,10 @@ public class RegularListViewAdapter extends BaseAdapter {
                 if (response.code() == HttpURLConnection.HTTP_OK) { // success
                     Log.v("Upload", "Success");
                     ObenApiResponse response_result = response.body();
+
+                    int regularAvatarID = response_result.UserAvatar.getAvatarId();
+                    editor.putInt("RegularAvatarID", regularAvatarID);
+                    editor.commit();
 
                     if (record_index == 0) {
                         // Refresh the listview.
@@ -294,7 +303,7 @@ public class RegularListViewAdapter extends BaseAdapter {
         onSaveRegularAvatar(pref.getInt("userID", 0),
                 btnIndex,
                 requestBody,
-                pref.getInt("avatarID", 0));
+                pref.getInt("RegularAvatarID", 0));
 
     }
 }

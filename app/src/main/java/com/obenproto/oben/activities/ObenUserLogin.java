@@ -103,7 +103,7 @@ public class ObenUserLogin extends Activity {
     public void onUserLogin(final String email, String password) {
         // Email login.
         ObenAPIService client = ObenAPIClient.newInstance(ObenAPIService.class);
-        Call<ObenApiResponse> call = client.userLogin(email, password);
+        Call<ObenApiResponse> call = client.userLogin(email, password, "Oben User");
 
         call.enqueue(new Callback<ObenApiResponse>() {
             @Override
@@ -141,13 +141,15 @@ public class ObenUserLogin extends Activity {
                 } else {
                     Log.d("User Login Status", "failure");
                     userLogin = "Connection Failure";
+                    progressBar.setVisibility(View.GONE);
                     Toast.makeText(getApplicationContext(), "Server Connection Failure", Toast.LENGTH_LONG).show();
                 }
             }
 
             @Override
             public void onFailure(Throwable t) {
-
+                Log.d("failure", t.getMessage());
+                Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }

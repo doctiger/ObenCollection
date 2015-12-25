@@ -223,7 +223,13 @@ public class CommercialListViewAdapter extends BaseAdapter {
     // Upload the recorded audio file.
     public void onSaveRegularAvatar(int userId, final int recordId, RequestBody audioFile, final int avatarId) {
         ObenAPIService client = ObenAPIClient.newInstance(ObenAPIService.class);
-        Call<ObenApiResponse> call = client.saveUserAvatar(userId, recordId, audioFile, avatarId);;
+
+        Call<ObenApiResponse> call;
+        if (avatarId == 0) {
+            call = client.saveOriginalCommercialUserAvatar(userId, recordId, audioFile);
+        } else {
+            call = client.saveCommercialUserAvatar(userId, recordId, audioFile, avatarId);
+        }
 
         call.enqueue(new Callback<ObenApiResponse>() {
             @Override
@@ -233,6 +239,10 @@ public class CommercialListViewAdapter extends BaseAdapter {
                 if (response.code() == HttpURLConnection.HTTP_OK) { // success
                     Log.v("Upload", "Success");
                     ObenApiResponse response_result = response.body();
+
+                    int commercialAvatarID = response_result.UserAvatar.getAvatarId();
+                    editor.putInt("CommercialAvatarID", commercialAvatarID);
+                    editor.commit();
 
                     if (record_index == 0) {
                         // Refresh the listview.

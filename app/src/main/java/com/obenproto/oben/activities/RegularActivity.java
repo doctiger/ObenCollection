@@ -45,7 +45,9 @@ public class RegularActivity extends Activity {
     public static List<ObenApiResponse> phraseList;
     public static Activity activity = null;
     public static Map recordMap;
+    public static Map avatarMap;
     SharedPreferences pref;
+    SharedPreferences.Editor editor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,11 +58,12 @@ public class RegularActivity extends Activity {
 
         context = this.getBaseContext();
         pref = PreferenceManager.getDefaultSharedPreferences(this);
+        editor = pref.edit();
 
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         progressBar.setVisibility(View.VISIBLE);
 
-        listView = (ListView)findViewById(R.id.listView);
+        listView = (ListView) findViewById(R.id.listView);
         list = new ArrayList<>();
 
         // Get the list contents.
@@ -111,7 +114,7 @@ public class RegularActivity extends Activity {
         list.add(temp);
 
         for (int i = 1; i <= index; i++) {
-            temp.put(String.valueOf(i), phraseList.get((index-i)%REGULAR_PHRASES_COUNT).Phrase.getSentence());
+            temp.put(String.valueOf(i), phraseList.get((index - i) % REGULAR_PHRASES_COUNT).Phrase.getSentence());
             list.add(temp);
         }
 
@@ -125,11 +128,55 @@ public class RegularActivity extends Activity {
         activity.startActivity(activity.getIntent());
     }
 
-    //// Get the all avatar data for regular.
-    public void onAvatarData() {
+    // Get avatarID for regular
+    public void onRegularAvatarID(int userId) {
+
         ObenAPIService client = ObenAPIClient.newInstance(ObenAPIService.class);
-        Log.d("avatarID ", String.valueOf(pref.getInt("avatarID", 0)));
-        Call<ObenApiResponse> call = client.getAvatarData(pref.getInt("avatarID", 0));
+        Call<List<ObenApiResponse>> call = client.getRegularAvatars(userId);
+
+        call.enqueue(new Callback<List<ObenApiResponse>>() {
+            @Override
+            public void onResponse(Response<List<ObenApiResponse>> response, Retrofit retrofit) {
+                if (response.code() == HttpURLConnection.HTTP_OK) {
+
+                    if (response.body().size() == 0) {
+                        editor.putInt("RegularAvatarID", 0);
+
+                    } else {
+                        ObenApiResponse response_result = response.body().get(0);
+                        avatarMap = (Map) response_result.Avatar;
+
+                        if (avatarMap != null) {
+                            editor.putInt("RegularAvatarID", Float.valueOf(avatarMap.get("avatarId").toString()).intValue());
+
+                        } else {
+                            editor.putInt("RegularAvatarID", 0);
+                        }
+                    }
+
+                    editor.commit();
+                    Log.d("regular avatarID", String.valueOf(pref.getInt("RegularAvatarID", 0)));
+
+                    // Get the avatar data.
+                    onAvatarData(pref.getInt("RegularAvatarID", 0));
+
+                } else {
+                    Toast.makeText(getApplicationContext(), "Http Unauthorized", Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                Log.d("Regular avtar ID", t.getMessage());
+                Toast.makeText(getApplicationContext(), "Failure", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    //// Get the all avatar data for regular.
+    public void onAvatarData(int avatarID) {
+        ObenAPIService client = ObenAPIClient.newInstance(ObenAPIService.class);
+        Call<ObenApiResponse> call = client.getAvatarData(avatarID);
 
         call.enqueue(new Callback<ObenApiResponse>() {
 
@@ -141,6 +188,7 @@ public class RegularActivity extends Activity {
                     Log.d("debug avatar List", String.valueOf(recordMap.get("record" + 5)));
 
                     progressBar.setVisibility(View.GONE);
+
                     if (recordMap.get("status") == null) {
                         String str = recordMap.get("recordCount").toString();
                         recordcount = Float.valueOf(str).intValue();
@@ -168,7 +216,7 @@ public class RegularActivity extends Activity {
 
             @Override
             public void onFailure(Throwable t) {
-
+                Log.d("failure", t.getMessage());
             }
         });
     }
@@ -186,7 +234,11 @@ public class RegularActivity extends Activity {
                     REGULAR_PHRASES_COUNT = phraseList.size();
                     Log.d("phrases count", String.valueOf(phraseList.size()));
 
-                    onAvatarData();
+                    if (pref.getInt("RegularAvatarID", 0) == 0) {
+                        onRegularAvatarID(pref.getInt("userID", 0));
+                    } else {
+                        onAvatarData(pref.getInt("RegularAvatarID", 0));
+                    }
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("Status", "Authorization Error");
