@@ -149,6 +149,7 @@ public class ObenUserLogin extends Activity {
             @Override
             public void onFailure(Throwable t) {
                 Log.d("failure", t.getMessage());
+                progressBar.setVisibility(View.GONE);
                 Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });

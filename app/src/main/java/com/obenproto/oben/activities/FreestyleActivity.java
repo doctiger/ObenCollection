@@ -107,6 +107,8 @@ public class FreestyleActivity extends Activity {
         });
 
         // Get the freestyle avatar ID.
+        Log.d("FreestyleAvatarID", String.valueOf(pref.getInt("FreestyleAvatarID", 0)));
+        Log.d("RecordCount", String.valueOf(pref.getInt("RecordCount", 0)));
         if (pref.getInt("FreestyleAvatarID", 0) == 0) {
             onFreestyleAvatarID(userId);
             progressBar.setVisibility(View.VISIBLE);
