@@ -1,15 +1,16 @@
 package com.obenproto.oben.activities;
 
-import android.app.Activity;
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
+import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.obenproto.oben.R;
 import com.obenproto.oben.api.ObenAPIClient;
@@ -29,7 +30,9 @@ public class OptionActivity extends Activity {
     TextView cancelLbl, logoutLbl;
     SharedPreferences pref;
     SharedPreferences.Editor editor;
+    ProgressBar progressBar;
 
+    @SuppressLint("CommitPrefEdits")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,6 +41,9 @@ public class OptionActivity extends Activity {
 
         pref = PreferenceManager.getDefaultSharedPreferences(this);
         editor = pref.edit();
+
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.GONE);
 
         regularLbl = (TextView)findViewById(R.id.regularLbl);
         regularLbl.setOnClickListener(new View.OnClickListener() {
@@ -67,6 +73,7 @@ public class OptionActivity extends Activity {
         cancelLbl.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                startActivity(new Intent(OptionActivity.this, ProfileActivity.class));
                 finish();
             }
         });
@@ -76,8 +83,17 @@ public class OptionActivity extends Activity {
             @Override
             public void onClick(View v) {
                 onUserLogout();
+                logoutLbl.setEnabled(false);
+                progressBar.setVisibility(View.VISIBLE);
             }
         });
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        startActivity(new Intent(OptionActivity.this, ProfileActivity.class));
+        finish();
     }
 
     // Recall of user logout
@@ -89,6 +105,7 @@ public class OptionActivity extends Activity {
         call.enqueue(new Callback<ObenApiResponse>() {
             @Override
             public void onResponse(Response<ObenApiResponse> response, Retrofit retrofit) {
+                progressBar.setVisibility(View.GONE);
                 if (response.code() == HttpURLConnection.HTTP_OK) { // success
                     ObenApiResponse response_result = response.body();
                     String message = response_result.User.getMessage();
@@ -108,18 +125,20 @@ public class OptionActivity extends Activity {
                     finish();
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
-                    Log.d("Status", "Authorization Error");
-                    Toast.makeText(getApplicationContext(), "Http Unauthorized", Toast.LENGTH_LONG).show();
+                    Log.d("Status", "Http Unauthorized");
+                    logoutLbl.setEnabled(true);
 
                 } else {
-                    Log.d("Status", "failure");
-                    Toast.makeText(getApplicationContext(), "Server Connection Failure", Toast.LENGTH_LONG).show();
+                    Log.d("Status", "Server Connection Failure");
+                    logoutLbl.setEnabled(true);
                 }
             }
 
             @Override
             public void onFailure(Throwable t) {
-                Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_LONG).show();
+                Log.d("Failure", t.getMessage());
+                progressBar.setVisibility(View.GONE);
+                logoutLbl.setEnabled(true);
             }
         });
     }

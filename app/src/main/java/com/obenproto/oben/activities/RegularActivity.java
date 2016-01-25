@@ -13,7 +13,6 @@ import android.view.Window;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.obenproto.oben.R;
 import com.obenproto.oben.adapters.RegularListViewAdapter;
@@ -84,11 +83,13 @@ public class RegularActivity extends Activity {
     }
 
     public void showAlert() {
+        RegularListViewAdapter.mediaPlayer.stop();
+
         AlertDialog.Builder builder = new AlertDialog.Builder(RegularActivity.this);
-        builder.setTitle("Cancel Avatar");
-        builder.setMessage("You may return here and complete your avatar at any time.");
+        builder.setTitle("Save & Exit");
+        builder.setMessage("All of your recordings have been saved. You may return and continue recording where you left off at any time.");
         builder.setCancelable(true);
-        builder.setPositiveButton("Yes, Cancel",
+        builder.setPositiveButton("Save & Exit",
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -161,14 +162,13 @@ public class RegularActivity extends Activity {
                     onAvatarData(pref.getInt("RegularAvatarID", 0));
 
                 } else {
-                    Toast.makeText(getApplicationContext(), "Http Unauthorized", Toast.LENGTH_LONG).show();
+                    Log.d("Status", "Http Unauthorized");
                 }
             }
 
             @Override
             public void onFailure(Throwable t) {
                 Log.d("Regular avtar ID", t.getMessage());
-                Toast.makeText(getApplicationContext(), "Failure", Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -201,16 +201,14 @@ public class RegularActivity extends Activity {
                     } else {
 
                         populateList(0);
-                        Toast.makeText(getApplicationContext(), "Avatar with id 4 not found", Toast.LENGTH_LONG).show();
+                        Log.d("Status", "Avatar with id 4 not found");
                     }
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
-                    Log.d("Status", "Authorization Error");
-                    Toast.makeText(getApplicationContext(), "Http Unauthorized", Toast.LENGTH_LONG).show();
+                    Log.d("Status", "Http Unauthorized");
 
                 } else {
-                    Log.d("Status", "failure");
-                    Toast.makeText(getApplicationContext(), "Server Connection Failure", Toast.LENGTH_LONG).show();
+                    Log.d("Status", "Server Connection Failure");
                 }
             }
 
@@ -241,19 +239,16 @@ public class RegularActivity extends Activity {
                     }
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
-                    Log.d("Status", "Authorization Error");
-                    Toast.makeText(getApplicationContext(), "Http Unauthorized", Toast.LENGTH_LONG).show();
+                    Log.d("Status", "Http Unauthorized");
 
                 } else {
-                    Log.d("Status", "failure");
-                    Toast.makeText(getApplicationContext(), "Server Connection Failure", Toast.LENGTH_LONG).show();
+                    Log.d("Status", "Server Connection Failure");
                 }
             }
 
             @Override
             public void onFailure(Throwable t) {
                 Log.d("Status", "failure");
-                Toast.makeText(getApplicationContext(), "Failure", Toast.LENGTH_LONG).show();
             }
         });
     }

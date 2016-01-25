@@ -10,7 +10,6 @@ import android.view.View;
 import android.view.Window;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.obenproto.oben.R;
 import com.obenproto.oben.api.ObenAPIClient;
@@ -41,10 +40,12 @@ public class ProfileActivity extends Activity {
         pref = PreferenceManager.getDefaultSharedPreferences(this);
         editor = pref.edit();
 
-        progressBar = (ProgressBar)findViewById(R.id.progressBar);
-        userIDTxt = (TextView)findViewById(R.id.userIDLbl);
-        avatarIDTxt = (TextView)findViewById(R.id.avatarIDLbl);
-        userEmailTxt = (TextView)findViewById(R.id.userEmailLbl);
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.GONE);
+
+        userIDTxt = (TextView) findViewById(R.id.userIDLbl);
+        avatarIDTxt = (TextView) findViewById(R.id.avatarIDLbl);
+        userEmailTxt = (TextView) findViewById(R.id.userEmailLbl);
 
         setupAvatar = (TextView) findViewById(R.id.setUpAvatarLbl);
         setupAvatar.setOnClickListener(new View.OnClickListener() {
@@ -52,6 +53,7 @@ public class ProfileActivity extends Activity {
             public void onClick(View v) {
                 Intent intent = new Intent(ProfileActivity.this, OptionActivity.class);
                 startActivity(intent);
+                finish();
             }
         });
 
@@ -60,6 +62,8 @@ public class ProfileActivity extends Activity {
             @Override
             public void onClick(View v) {
                 onUserLogout();
+                logoutTxt.setEnabled(false);
+                progressBar.setVisibility(View.VISIBLE);
             }
         });
 
@@ -95,12 +99,10 @@ public class ProfileActivity extends Activity {
                     logoutTxt.setEnabled(true);
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
-                    Log.d("Status", "Authorization Error");
-                    Toast.makeText(getApplicationContext(), "Http Unauthorized", Toast.LENGTH_LONG).show();
+                    Log.d("Status", "Http Unauthorized");
 
                 } else {
-                    Log.d("Status", "failure");
-                    Toast.makeText(getApplicationContext(), "Server Connection Failure", Toast.LENGTH_LONG).show();
+                    Log.d("Status", "Server Connection Failure");
                 }
             }
 
@@ -114,7 +116,7 @@ public class ProfileActivity extends Activity {
                 setupAvatar.setEnabled(true);
                 logoutTxt.setEnabled(true);
 
-                Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_LONG).show();
+                Log.d("Failure", t.getMessage());
             }
         });
     }
@@ -128,6 +130,8 @@ public class ProfileActivity extends Activity {
         call.enqueue(new Callback<ObenApiResponse>() {
             @Override
             public void onResponse(Response<ObenApiResponse> response, Retrofit retrofit) {
+                progressBar.setVisibility(View.GONE);
+
                 if (response.code() == HttpURLConnection.HTTP_OK) { // success
                     ObenApiResponse response_result = response.body();
                     String message = response_result.User.getMessage();
@@ -147,18 +151,20 @@ public class ProfileActivity extends Activity {
                     finish();
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
-                    Log.d("Status", "Authorization Error");
-                    Toast.makeText(getApplicationContext(), "Http Unauthorized", Toast.LENGTH_LONG).show();
+                    Log.d("Status", "Http Unauthorized");
+                    logoutTxt.setEnabled(true);
 
                 } else {
-                    Log.d("Status", "failure");
-                    Toast.makeText(getApplicationContext(), "Server Connection Failure", Toast.LENGTH_LONG).show();
+                    Log.d("Status", "Server Connection Failure");
+                    logoutTxt.setEnabled(true);
                 }
             }
 
             @Override
             public void onFailure(Throwable t) {
-                Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_LONG).show();
+                Log.d("Failure", t.getMessage());
+                logoutTxt.setEnabled(true);
+                progressBar.setVisibility(View.GONE);
             }
         });
     }
@@ -185,12 +191,10 @@ public class ProfileActivity extends Activity {
                     onGetUserAvatar(response_result.User.getUserId());
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
-                    Log.d("User login Status", "Authorization Error");
-                    Toast.makeText(getApplicationContext(), "Http Unauthorized", Toast.LENGTH_LONG).show();
+                    Log.d("User login Status", "Http Unauthorized");
 
                 } else {
-                    Log.d("User login Status", "failure");
-                    Toast.makeText(getApplicationContext(), "Server Connection Failure", Toast.LENGTH_LONG).show();
+                    Log.d("User login Status", "Server Connection Failure");
                 }
             }
 

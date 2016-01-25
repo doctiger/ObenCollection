@@ -21,7 +21,7 @@
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
             android:layout_marginLeft="5dp"
-            android:text="Cancel"
+            android:text="@string/cancelButtonStr"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="#008DFF" />
     </RelativeLayout>

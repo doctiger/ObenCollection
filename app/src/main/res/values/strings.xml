@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">Oben</string>
 
-    <string name="startRecording">Press button to start recording.</string>
-    <string name="stopRecording">Release button to stop recording.</string>
+    <string name="startRecording">Touch button to start recording.</string>
+    <string name="stopRecording">Touch button to stop recording.</string>
 
     <string name="action_settings">Settings</string>
 
@@ -12,4 +12,5 @@
     <string name="stop_recording">Stop</string>
     <string name="audio_format">Format</string>
     <string name="header_description">When the sunlight strikes raindrops in the air, they act like a prism and form a rainbow.</string>
+    <string name="cancelButtonStr"><![CDATA[Save & Exit]]></string>
 </resources>

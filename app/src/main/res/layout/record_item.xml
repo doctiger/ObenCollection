@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -12,9 +12,9 @@
         android:layout_marginLeft="10dp"
         android:layout_marginTop="5dp"
         android:text="Name"
-        android:textSize="16dp"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="@color/colorBlack" />
+        android:textColor="@color/colorBlack"
+        android:textSize="16dp" />
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -30,7 +30,8 @@
             android:background="@drawable/button_border"
             android:text="Hear Sample"
             android:textColor="@color/colorBlue"
-            android:textSize="13sp" />
+            android:textSize="13sp"
+            android:visibility="gone" />
 
         <Button
             android:id="@+id/listenBtn"

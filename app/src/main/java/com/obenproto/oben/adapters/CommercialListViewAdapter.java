@@ -1,5 +1,6 @@
 package com.obenproto.oben.adapters;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
@@ -20,6 +21,7 @@ import com.obenproto.oben.R;
 import com.obenproto.oben.activities.CommercialActivity;
 import com.obenproto.oben.api.ObenAPIClient;
 import com.obenproto.oben.api.ObenAPIService;
+import com.obenproto.oben.recorder.ExtAudioRecorder;
 import com.obenproto.oben.response.ObenApiResponse;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.RequestBody;
@@ -52,6 +54,8 @@ public class CommercialListViewAdapter extends BaseAdapter {
     String filePath, recordedFilePath, sampleFilePath;
     String listenAudioUrl, sampleAdudioUrl;
     int record_index = 0;
+    ExtAudioRecorder extAudioRecorder;
+    public static MediaPlayer mediaPlayerListen;
 
     public CommercialListViewAdapter(Context context, ArrayList<HashMap<String, String>> list) {
         super();
@@ -93,11 +97,11 @@ public class CommercialListViewAdapter extends BaseAdapter {
 
         if (position == 0) {
             listenBtn.setEnabled(false);
-            listenBtn.setAlpha(0.5f);
+            listenBtn.setAlpha(0.1f);
 
             if (list.size() > CommercialActivity.LIMIT_NUM) {
                 recBtn.setEnabled(false);
-                recBtn.setAlpha(0.5f);
+                recBtn.setAlpha(0.1f);
             }
         }
 
@@ -106,6 +110,7 @@ public class CommercialListViewAdapter extends BaseAdapter {
         Log.d("d-debug description text", map.get(String.valueOf(position)));
 
         hearSampleBtn.setOnClickListener(new View.OnClickListener() {
+            @SuppressLint("LongLogTag")
             @Override
             public void onClick(View v) {
                 if (isUploading) return;
@@ -115,29 +120,30 @@ public class CommercialListViewAdapter extends BaseAdapter {
                 sampleAdudioUrl = String.valueOf(CommercialActivity.phraseList.get(list.size()-position-1).Phrase.getExample());
 
                 // Play the sample audio file from the remote url.
-                final MediaPlayer mediaPlayer = new MediaPlayer();
-                mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                final MediaPlayer mediaPlayerHear = new MediaPlayer();
+                mediaPlayerHear.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                mediaPlayerHear.setOnErrorListener(new MediaPlayer.OnErrorListener() {
                     @Override
                     public boolean onError(MediaPlayer mp, int what, int extra) {
                         return false;
                     }
                 });
-                mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                mediaPlayerHear.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                     @Override
                     public void onPrepared(MediaPlayer mp) {
                         CommercialActivity.progressBar.setVisibility(View.GONE);
-                        mediaPlayer.start();
+                        mediaPlayerHear.start();
                         isAudioPlaying = false;
                     }
                 });
 
                 try {
-                    mediaPlayer.setDataSource(sampleAdudioUrl);
+                    mediaPlayerHear.setDataSource(sampleAdudioUrl);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                mediaPlayer.prepareAsync();
+                mediaPlayerHear.setVolume(1.0f, 1.0f);
+                mediaPlayerHear.prepareAsync();
                 CommercialActivity.progressBar.setVisibility(View.VISIBLE);
                 isAudioPlaying = true;
 
@@ -155,30 +161,34 @@ public class CommercialListViewAdapter extends BaseAdapter {
                 listenAudioUrl = CommercialActivity.recordMap.get("record" + (list.size()-position)).toString();
 
                 // Play the recorded audio file from the remote url.
-                final MediaPlayer mediaPlayer = new MediaPlayer();
-                mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-                    @Override
-                    public boolean onError(MediaPlayer mp, int what, int extra) {
-                        return false;
-                    }
-                });
-                mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                mediaPlayerListen = new MediaPlayer();
+                mediaPlayerListen.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                mediaPlayerListen.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    @SuppressLint("LongLogTag")
                     @Override
                     public void onPrepared(MediaPlayer mp) {
                         CommercialActivity.progressBar.setVisibility(View.GONE);
-                        mediaPlayer.start();
+                        mediaPlayerListen.start();
                         isAudioPlaying = false;
                         Log.d("d-starting recorded audio paying", listenAudioUrl);
                     }
                 });
 
+                mediaPlayerListen.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                    @Override
+                    public boolean onError(MediaPlayer mp, int what, int extra) {
+                        Toast.makeText(cont_, "MEDIA_ERROR_SYSTEM", Toast.LENGTH_SHORT).show();
+                        CommercialActivity.progressBar.setVisibility(View.GONE);
+                        return false;
+                    }
+                });
                 try {
-                    mediaPlayer.setDataSource(listenAudioUrl);
+                    mediaPlayerListen.setDataSource(listenAudioUrl);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                mediaPlayer.prepareAsync();
+                mediaPlayerListen.setVolume(1.0f, 1.0f);
+                mediaPlayerListen.prepareAsync();
                 CommercialActivity.progressBar.setVisibility(View.VISIBLE);
                 isAudioPlaying = true;
 
@@ -258,12 +268,10 @@ public class CommercialListViewAdapter extends BaseAdapter {
 
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
-                    Log.d("d-Status", "Authorization Error");
-                    Toast.makeText(cont_, "Http Unauthorized", Toast.LENGTH_LONG).show();
+                    Log.d("d-Status", "Http Unauthorized");
 
                 } else {
-                    Log.d("d-Status", "failure");
-                    Toast.makeText(cont_, "Server Connection Failure", Toast.LENGTH_LONG).show();
+                    Log.d("d-Status", "Server Connection Failure");
                 }
             }
 
@@ -278,15 +286,11 @@ public class CommercialListViewAdapter extends BaseAdapter {
     public void startRecording() throws IOException {
         Log.d("d-Recorder", "Start recording");
 
-        mediaRecorder = new MediaRecorder();
-        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.VOICE_RECOGNITION);
-        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.DEFAULT);
-        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
-        mediaRecorder.setAudioEncodingBitRate(160 * 1024);
-        mediaRecorder.setAudioSamplingRate(48000);
-        mediaRecorder.setOutputFile(filePath);
-        mediaRecorder.prepare();
-        mediaRecorder.start();
+        extAudioRecorder = ExtAudioRecorder.getInstanse(false); // Uncompressed recording (WAV) : IF true - AMR
+
+        extAudioRecorder.setOutputFile(filePath);
+        extAudioRecorder.prepare();
+        extAudioRecorder.start();
     }
 
     public void stopRecording(int btnIndex) {
@@ -294,9 +298,8 @@ public class CommercialListViewAdapter extends BaseAdapter {
         isUploading = true;
         Log.d("d-Recorder", "Stop recording");
 
-        mediaRecorder.stop();
-        mediaRecorder.release();
-        mediaRecorder = null;
+        extAudioRecorder.stop();
+        extAudioRecorder.release();
 
         String str = "/storage/emulated/0/iPhoneRecVoice1.wav";
         Log.d("d-audio file path : ", filePath);

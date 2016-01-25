@@ -14,7 +14,6 @@ import android.view.Window;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.obenproto.oben.R;
 import com.obenproto.oben.api.ObenAPIClient;
@@ -102,6 +101,7 @@ public class ObenUserLogin extends Activity {
 
     public void onUserLogin(final String email, String password) {
         // Email login.
+        Log.d("Connected", "OK");
         ObenAPIService client = ObenAPIClient.newInstance(ObenAPIService.class);
         Call<ObenApiResponse> call = client.userLogin(email, password, "Oben User");
 
@@ -121,7 +121,7 @@ public class ObenUserLogin extends Activity {
                         editor.putInt("userID", userID);
                         editor.apply();
 
-                        passwordText.setError("Login Success");
+//                        passwordText.setError("Login Success");
                         Intent intent = new Intent(ObenUserLogin.this, ProfileActivity.class);
                         startActivity(intent);
                         finish();
@@ -134,15 +134,13 @@ public class ObenUserLogin extends Activity {
                     }
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
-                    Log.d("User Login Status :", "Authorization Error");
+                    Log.d("User Login Status :", "Http Unauthorized");
                     progressBar.setVisibility(View.GONE);
-                    Toast.makeText(getApplicationContext(), "Http Unauthorized", Toast.LENGTH_LONG).show();
 
                 } else {
-                    Log.d("User Login Status", "failure");
+                    Log.d("User Login Status", "Server Connection Failure");
                     userLogin = "Connection Failure";
                     progressBar.setVisibility(View.GONE);
-                    Toast.makeText(getApplicationContext(), "Server Connection Failure", Toast.LENGTH_LONG).show();
                 }
             }
 
@@ -150,7 +148,6 @@ public class ObenUserLogin extends Activity {
             public void onFailure(Throwable t) {
                 Log.d("failure", t.getMessage());
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }

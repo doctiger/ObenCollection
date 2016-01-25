@@ -4,12 +4,10 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
@@ -20,6 +18,7 @@ import android.widget.Toast;
 import com.obenproto.oben.R;
 import com.obenproto.oben.api.ObenAPIClient;
 import com.obenproto.oben.api.ObenAPIService;
+import com.obenproto.oben.recorder.ExtAudioRecorder;
 import com.obenproto.oben.response.ObenApiResponse;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.RequestBody;
@@ -47,7 +46,7 @@ public class FreestyleActivity extends Activity {
     Map avatarMap;
     int userId = 0;
     private static String filePath;
-    private static MediaRecorder mediaRecorder;
+    ExtAudioRecorder extAudioRecorder;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -69,26 +68,37 @@ public class FreestyleActivity extends Activity {
         Log.d("userID", String.valueOf(pref.getInt("userID", 0)));
 
         start_rec = (ImageButton) findViewById(R.id.btnStart);
-        start_rec.setOnTouchListener(new View.OnTouchListener() {
+        start_rec.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        // pressed
-                        try {
-                            startRecording(v);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        return true;
-                    case MotionEvent.ACTION_UP:
-                        // released
-                        stopRecording(v);
-                        return true;
+            public void onClick(View v) {
+                try {
+                    startRecording(v);
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-                return false;
             }
         });
+
+//        start_rec.setOnTouchListener(new View.OnTouchListener() {
+//            @Override
+//            public boolean onTouch(View v, MotionEvent event) {
+//                switch (event.getAction()) {
+//                    case MotionEvent.ACTION_DOWN:
+//                        // pressed
+//                        try {
+//                            startRecording(v);
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        }
+//                        return true;
+//                    case MotionEvent.ACTION_UP:
+//                        // released
+//                        stopRecording(v);
+//                        return true;
+//                }
+//                return false;
+//            }
+//        });
 
         ImageButton stop_rec = (ImageButton) findViewById(R.id.btnStop);
         stop_rec.setOnClickListener(new View.OnClickListener() {
@@ -113,6 +123,7 @@ public class FreestyleActivity extends Activity {
             onFreestyleAvatarID(userId);
             progressBar.setVisibility(View.VISIBLE);
             start_rec.setEnabled(false);
+
         } else {
             if (pref.getInt("RecordCount", 0) == 0) {
                 progressBar.setVisibility(View.VISIBLE);
@@ -129,10 +140,10 @@ public class FreestyleActivity extends Activity {
 
     public void showAlert() {
         AlertDialog.Builder builder = new AlertDialog.Builder(FreestyleActivity.this);
-        builder.setTitle("Cancel Avatar");
-        builder.setMessage("You may return here and complete your avatar at any time.");
+        builder.setTitle("Save & Exit");
+        builder.setMessage("All of your recordings have been saved. You may return and continue recording where you left off at any time.");
         builder.setCancelable(true);
-        builder.setPositiveButton("Yes, Cancel",
+        builder.setPositiveButton("Save & Exit",
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -156,20 +167,11 @@ public class FreestyleActivity extends Activity {
         stop.setVisibility(View.VISIBLE);
         Log.d("Recorder", "Start recording");
 
-        try {
-            mediaRecorder = new MediaRecorder();
-            mediaRecorder.reset();
-            mediaRecorder.setAudioSource(MediaRecorder.AudioSource.VOICE_RECOGNITION);
-            mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.DEFAULT);
-            mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
-            mediaRecorder.setAudioEncodingBitRate(160*1024);
-            mediaRecorder.setAudioSamplingRate(48000);
-            mediaRecorder.setOutputFile(filePath);
-            mediaRecorder.prepare();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        mediaRecorder.start();
+        extAudioRecorder = ExtAudioRecorder.getInstanse(false);
+
+        extAudioRecorder.setOutputFile(filePath);
+        extAudioRecorder.prepare();
+        extAudioRecorder.start();
     }
 
     public void stopRecording(View view) {
@@ -179,9 +181,8 @@ public class FreestyleActivity extends Activity {
         start_rec.setEnabled(false);
         Log.d("Recorder", "Stop recording");
 
-        mediaRecorder.stop();
-        mediaRecorder.release();
-        mediaRecorder = null;
+        extAudioRecorder.stop();
+        extAudioRecorder.release();
 
         String str = "/storage/emulated/0/iPhoneRecVoice1.wav";
         Log.d("audio file path : ", filePath);
@@ -228,12 +229,10 @@ public class FreestyleActivity extends Activity {
                     Toast.makeText(getApplicationContext(), "Upload Success", Toast.LENGTH_LONG).show();
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
-                    Log.d("Status", "Authorization Error");
-                    Toast.makeText(getApplicationContext(), "Http Unauthorized", Toast.LENGTH_LONG).show();
+                    Log.d("Status", "Http Unauthorized");
 
                 } else {
-                    Log.d("Status", "failure");
-                    Toast.makeText(getApplicationContext(), "Connection Failure", Toast.LENGTH_LONG).show();
+                    Log.d("Status", "Connection Failure");
                 }
             }
 
@@ -241,8 +240,7 @@ public class FreestyleActivity extends Activity {
             public void onFailure(Throwable t) {
                 progressBar.setVisibility(View.GONE);
                 start_rec.setEnabled(true);
-                Log.e("Upload", t.getMessage());
-                Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_LONG).show();
+                Log.d("Upload", t.getMessage());
             }
         });
     }
@@ -278,14 +276,13 @@ public class FreestyleActivity extends Activity {
                     Log.d("freestyle avatarID", String.valueOf(pref.getInt("FreestyleAvatarID", 0)));
 
                 } else {
-                    Toast.makeText(getApplicationContext(), "Http Unauthorized", Toast.LENGTH_LONG).show();
+                    Log.d("Status", "Http Unauthorized");
                 }
             }
 
             @Override
             public void onFailure(Throwable t) {
-                Log.d("Regular avtar ID", t.getMessage());
-                Toast.makeText(getApplicationContext(), "Failure", Toast.LENGTH_LONG).show();
+                Log.d("Failure", t.getMessage());
             }
         });
     }
@@ -317,14 +314,14 @@ public class FreestyleActivity extends Activity {
                     } else {
                         editor.putInt("RecordCount", 0);
                         editor.commit();
-                        Toast.makeText(getApplicationContext(), "Avatar with id 4 not found", Toast.LENGTH_LONG).show();
+                        Log.d("Status", "Avatar with id 4 not found");
                     }
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
-                    Toast.makeText(getApplicationContext(), "Http Unauthorized", Toast.LENGTH_LONG).show();
+                    Log.d("Status", "Http Unauthorized");
 
                 } else {
-                    Toast.makeText(getApplicationContext(), "Server Connection Failure", Toast.LENGTH_LONG).show();
+                    Log.d("Status", "Server Connection Failure");
                 }
             }
 
