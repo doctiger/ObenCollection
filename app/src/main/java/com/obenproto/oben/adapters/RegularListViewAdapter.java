@@ -42,9 +42,9 @@ public class RegularListViewAdapter extends BaseAdapter {
     public ArrayList<HashMap<String, String>> list;
     public Context cont_;
     public LayoutInflater mInflater;
+    public static boolean isAudioPlaying = false;
     boolean isRecording = false;
     boolean isUploading = false;
-    boolean isAudioPlaying = false;
     SharedPreferences pref;
     SharedPreferences.Editor editor;
     MediaRecorder mediaRecorder;
@@ -83,6 +83,7 @@ public class RegularListViewAdapter extends BaseAdapter {
         return 0;
     }
 
+    @SuppressLint("LongLogTag")
     @Override
     public View getView(final int position, View convertView, final ViewGroup parent) {
         convertView = mInflater.inflate(R.layout.record_item, null);
@@ -92,20 +93,14 @@ public class RegularListViewAdapter extends BaseAdapter {
         final Button listenBtn = (Button) convertView.findViewById(R.id.listenBtn);
         final Button recBtn = (Button) convertView.findViewById(R.id.recBtn);
 
-        if (position == 0) {
+        if (position == 0 && list.size() < RegularActivity.LIMIT_NUM) {
             listenBtn.setEnabled(false);
             listenBtn.setAlpha(0.1f);
-
-            if (list.size() > RegularActivity.LIMIT_NUM) {
-                recBtn.setEnabled(false);
-                recBtn.setAlpha(0.1f);
-            }
         }
 
         final HashMap<String, String> map = list.get(position);
         descriptionTxt.setText(map.get(String.valueOf(position)));
         Log.d("d-debug description text", map.get(String.valueOf(position)));
-
 
         hearSampleBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -115,7 +110,7 @@ public class RegularListViewAdapter extends BaseAdapter {
                 if (isAudioPlaying) return;
 
                 Log.d("d- phrase", String.valueOf(RegularActivity.phraseList.get(0)) + String.valueOf(list.size()) + " - " + String.valueOf(position));
-                sampleAdudioUrl = String.valueOf(RegularActivity.phraseList.get(list.size()-position-1).Phrase.getExample());
+                sampleAdudioUrl = String.valueOf(RegularActivity.phraseList.get(list.size() - position - 1).Phrase.getExample());
 
                 // Play the sample audio file from the remote url.
                 final MediaPlayer mediaPlayerHear = new MediaPlayer();
@@ -131,6 +126,11 @@ public class RegularListViewAdapter extends BaseAdapter {
                     public void onPrepared(MediaPlayer mp) {
                         RegularActivity.progressBar.setVisibility(View.GONE);
                         mediaPlayerHear.start();
+                    }
+                });
+                mediaPlayerHear.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
                         isAudioPlaying = false;
                     }
                 });
@@ -175,8 +175,15 @@ public class RegularListViewAdapter extends BaseAdapter {
                     public void onPrepared(MediaPlayer mp) {
                         RegularActivity.progressBar.setVisibility(View.GONE);
                         mediaPlayer.start();
-                        isAudioPlaying = false;
+//                        isAudioPlaying = false;
                         Log.d("d-starting recorded audio paying", listenAudioUrl);
+                    }
+                });
+                mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
+                        Log.d("audio playing", "Completion");
+                        isAudioPlaying = false;
                     }
                 });
 
@@ -275,6 +282,9 @@ public class RegularListViewAdapter extends BaseAdapter {
             @Override
             public void onFailure(Throwable t) {
                 Log.e("Upload", t.getMessage());
+                Toast.makeText(cont_, t.getMessage(), Toast.LENGTH_SHORT).show();
+                RegularActivity.progressBar.setVisibility(View.GONE);
+                isUploading = false;
             }
         });
     }
@@ -306,6 +316,5 @@ public class RegularListViewAdapter extends BaseAdapter {
                 btnIndex,
                 requestBody,
                 pref.getInt("RegularAvatarID", 0));
-
     }
 }

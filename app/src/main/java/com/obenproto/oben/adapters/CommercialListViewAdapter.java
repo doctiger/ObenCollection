@@ -45,9 +45,9 @@ public class CommercialListViewAdapter extends BaseAdapter {
     public ArrayList<HashMap<String, String>> list;
     public Context cont_;
     public LayoutInflater mInflater;
+    public static boolean isAudioPlaying = false;
     boolean isRecording = false;
     boolean isUploading = false;
-    boolean isAudioPlaying = false;
     SharedPreferences pref;
     SharedPreferences.Editor editor;
     MediaRecorder mediaRecorder;
@@ -86,6 +86,7 @@ public class CommercialListViewAdapter extends BaseAdapter {
         return 0;
     }
 
+    @SuppressLint("LongLogTag")
     @Override
     public View getView(final int position, View convertView, final ViewGroup parent) {
         convertView = mInflater.inflate(R.layout.record_item, null);
@@ -95,14 +96,9 @@ public class CommercialListViewAdapter extends BaseAdapter {
         final Button listenBtn = (Button) convertView.findViewById(R.id.listenBtn);
         final Button recBtn = (Button) convertView.findViewById(R.id.recBtn);
 
-        if (position == 0) {
+        if (position == 0 && list.size() < CommercialActivity.LIMIT_NUM) {
             listenBtn.setEnabled(false);
             listenBtn.setAlpha(0.1f);
-
-            if (list.size() > CommercialActivity.LIMIT_NUM) {
-                recBtn.setEnabled(false);
-                recBtn.setAlpha(0.1f);
-            }
         }
 
         final HashMap<String, String> map = list.get(position);
@@ -117,7 +113,7 @@ public class CommercialListViewAdapter extends BaseAdapter {
                 if (isRecording) return;
                 if (isAudioPlaying) return;
 
-                sampleAdudioUrl = String.valueOf(CommercialActivity.phraseList.get(list.size()-position-1).Phrase.getExample());
+                sampleAdudioUrl = String.valueOf(CommercialActivity.phraseList.get(list.size() - position - 1).Phrase.getExample());
 
                 // Play the sample audio file from the remote url.
                 final MediaPlayer mediaPlayerHear = new MediaPlayer();
@@ -133,6 +129,11 @@ public class CommercialListViewAdapter extends BaseAdapter {
                     public void onPrepared(MediaPlayer mp) {
                         CommercialActivity.progressBar.setVisibility(View.GONE);
                         mediaPlayerHear.start();
+                    }
+                });
+                mediaPlayerHear.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
                         isAudioPlaying = false;
                     }
                 });
@@ -158,7 +159,7 @@ public class CommercialListViewAdapter extends BaseAdapter {
                 if (isRecording) return;
                 if (isAudioPlaying) return;
 
-                listenAudioUrl = CommercialActivity.recordMap.get("record" + (list.size()-position)).toString();
+                listenAudioUrl = CommercialActivity.recordMap.get("record" + (list.size() - position)).toString();
 
                 // Play the recorded audio file from the remote url.
                 mediaPlayerListen = new MediaPlayer();
@@ -169,11 +170,9 @@ public class CommercialListViewAdapter extends BaseAdapter {
                     public void onPrepared(MediaPlayer mp) {
                         CommercialActivity.progressBar.setVisibility(View.GONE);
                         mediaPlayerListen.start();
-                        isAudioPlaying = false;
                         Log.d("d-starting recorded audio paying", listenAudioUrl);
                     }
                 });
-
                 mediaPlayerListen.setOnErrorListener(new MediaPlayer.OnErrorListener() {
                     @Override
                     public boolean onError(MediaPlayer mp, int what, int extra) {
@@ -182,6 +181,14 @@ public class CommercialListViewAdapter extends BaseAdapter {
                         return false;
                     }
                 });
+                mediaPlayerListen.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
+                        Log.d("audio playing", "Completion");
+                        isAudioPlaying = false;
+                    }
+                });
+
                 try {
                     mediaPlayerListen.setDataSource(listenAudioUrl);
                 } catch (IOException e) {
@@ -221,7 +228,7 @@ public class CommercialListViewAdapter extends BaseAdapter {
                 } else {
                     int btnIndex = position;
 
-                    stopRecording(list.size()-btnIndex);
+                    stopRecording(list.size() - btnIndex);
                 }
 
             }
@@ -277,7 +284,10 @@ public class CommercialListViewAdapter extends BaseAdapter {
 
             @Override
             public void onFailure(Throwable t) {
-                Log.e("Upload", t.getMessage());
+                Log.d("Upload", t.getMessage());
+                Toast.makeText(cont_, t.getMessage(), Toast.LENGTH_LONG).show();
+                CommercialActivity.progressBar.setVisibility(View.GONE);
+                isUploading = false;
             }
         });
     }

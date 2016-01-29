@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -83,7 +84,9 @@ public class RegularActivity extends Activity {
     }
 
     public void showAlert() {
-        RegularListViewAdapter.mediaPlayer.stop();
+        if (RegularListViewAdapter.isAudioPlaying) {
+            RegularListViewAdapter.mediaPlayer.stop();
+        }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(RegularActivity.this);
         builder.setTitle("Save & Exit");
@@ -108,10 +111,14 @@ public class RegularActivity extends Activity {
         alertDialog.show();
     }
 
+    // Show the list veiw.
     public static void populateList(int index) {
         HashMap<String, String> temp = new HashMap<>();
 
-        temp.put(String.valueOf(0), phraseList.get(index).Phrase.getSentence());
+        Log.d("Index", String.valueOf(index));
+        if (index >= LIMIT_NUM) index = LIMIT_NUM - 1;
+
+        temp.put(String.valueOf(0), phraseList.get(index % REGULAR_PHRASES_COUNT).Phrase.getSentence());
         list.add(temp);
 
         for (int i = 1; i <= index; i++) {
@@ -121,9 +128,9 @@ public class RegularActivity extends Activity {
 
         adapter = new RegularListViewAdapter(context, list);
         listView.setAdapter(adapter);
-
     }
 
+    // Refresh the list view.
     public static void refreshListView() {
         activity.finish();
         activity.startActivity(activity.getIntent());
@@ -163,12 +170,16 @@ public class RegularActivity extends Activity {
 
                 } else {
                     Log.d("Status", "Http Unauthorized");
+                    startActivity(new Intent(RegularActivity.this, OptionActivity.class));
+                    finish();
                 }
             }
 
             @Override
             public void onFailure(Throwable t) {
                 Log.d("Regular avtar ID", t.getMessage());
+                startActivity(new Intent(RegularActivity.this, OptionActivity.class));
+                finish();
             }
         });
     }
@@ -194,8 +205,15 @@ public class RegularActivity extends Activity {
                         recordcount = Float.valueOf(str).intValue();
                         Log.d("debug record count", String.valueOf(recordcount));
 
+                        editor.putInt("RegularRecordedCount", recordcount);
+                        editor.apply();
+
                         listView = (ListView) findViewById(R.id.listView);
                         list = new ArrayList<>();
+
+                        Log.d("Record count : ", String.valueOf(recordcount));
+                        if (recordcount > LIMIT_NUM)  recordcount = LIMIT_NUM;
+
                         populateList(recordcount);
 
                     } else {
@@ -206,6 +224,8 @@ public class RegularActivity extends Activity {
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("Status", "Http Unauthorized");
+                    startActivity(new Intent(RegularActivity.this, OptionActivity.class));
+                    finish();
 
                 } else {
                     Log.d("Status", "Server Connection Failure");
@@ -215,6 +235,8 @@ public class RegularActivity extends Activity {
             @Override
             public void onFailure(Throwable t) {
                 Log.d("failure", t.getMessage());
+                startActivity(new Intent(RegularActivity.this, OptionActivity.class));
+                finish();
             }
         });
     }
@@ -230,7 +252,7 @@ public class RegularActivity extends Activity {
                 if (response.code() == HttpURLConnection.HTTP_OK) { // success
                     phraseList = response.body();
                     REGULAR_PHRASES_COUNT = phraseList.size();
-                    Log.d("phrases count", String.valueOf(phraseList.size()));
+                    Log.d("phrases count", String.valueOf(REGULAR_PHRASES_COUNT));
 
                     if (pref.getInt("RegularAvatarID", 0) == 0) {
                         onRegularAvatarID(pref.getInt("userID", 0));
@@ -240,6 +262,8 @@ public class RegularActivity extends Activity {
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("Status", "Http Unauthorized");
+                    startActivity(new Intent(RegularActivity.this, OptionActivity.class));
+                    finish();
 
                 } else {
                     Log.d("Status", "Server Connection Failure");
@@ -249,6 +273,8 @@ public class RegularActivity extends Activity {
             @Override
             public void onFailure(Throwable t) {
                 Log.d("Status", "failure");
+                startActivity(new Intent(RegularActivity.this, OptionActivity.class));
+                finish();
             }
         });
     }

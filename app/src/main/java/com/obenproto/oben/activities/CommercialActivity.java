@@ -83,7 +83,9 @@ public class CommercialActivity extends Activity {
     }
 
     public void showAlert() {
-        CommercialListViewAdapter.mediaPlayerListen.stop();
+        if (CommercialListViewAdapter.isAudioPlaying) {
+            CommercialListViewAdapter.mediaPlayerListen.stop();
+        }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(CommercialActivity.this);
         builder.setTitle("Save & Exit");
@@ -111,8 +113,11 @@ public class CommercialActivity extends Activity {
     public static void populateList(int index) {
         HashMap<String, String> temp = new HashMap<>();
 
+        Log.d("Index", String.valueOf(index));
+        if (index >= LIMIT_NUM) index = LIMIT_NUM - 1;
+
         if (index < 9) {
-            temp.put(String.valueOf(0), phraseList.get(index).Phrase.getSentence());
+            temp.put(String.valueOf(0), phraseList.get(index % COMMERCIAL_PHRASES_COUNT).Phrase.getSentence());
             list.add(temp);
         }
 
@@ -194,8 +199,15 @@ public class CommercialActivity extends Activity {
                         recordcount = Float.valueOf(str).intValue();
                         Log.d("debug record count", String.valueOf(recordcount));
 
+                        editor.putInt("CommercialRecordedCount", recordcount);
+                        editor.apply();
+
                         listView = (ListView) findViewById(R.id.listView);
                         list = new ArrayList<>();
+
+                        Log.d("Record count : ", String.valueOf(recordcount));
+                        if (recordcount > LIMIT_NUM)  recordcount = LIMIT_NUM;
+
                         populateList(recordcount);
 
                     } else {
@@ -229,8 +241,9 @@ public class CommercialActivity extends Activity {
             public void onResponse(Response<List<ObenApiResponse>> response, Retrofit retrofit) {
                 if (response.code() == HttpURLConnection.HTTP_OK) { // success
                     phraseList = response.body();
+
                     COMMERCIAL_PHRASES_COUNT = phraseList.size();
-                    Log.d("phrases count", String.valueOf(phraseList.size()));
+                    Log.d("phrases count", String.valueOf(COMMERCIAL_PHRASES_COUNT));
 
                     // get the avatar data for show listview.
                     if (pref.getInt("CommercialAvatarID", 0) == 0) {
