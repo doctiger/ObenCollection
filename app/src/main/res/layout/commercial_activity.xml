@@ -21,43 +21,33 @@
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
             android:layout_marginLeft="5dp"
-            android:text="Cancel"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="#008DFF" />
-
-        <TextView
-            android:id="@+id/header1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_alignTop="@+id/cancelBtn"
-            android:layout_marginRight="5dp"
-            android:gravity="center_vertical"
-            android:text="Save Avatar"
+            android:text="@string/cancelButtonStr"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="#008DFF" />
     </RelativeLayout>
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/descriptionTxt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
-            android:textColor="@color/colorBlack"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="20dp"
-            android:text="@string/header_description"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <ListView
             android:id="@+id/listView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
-    </LinearLayout>
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyleLargeInverse"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="145dp"
+            android:progress="@android:integer/config_mediumAnimTime"
+            android:progressDrawable="@drawable/circular_progress_view"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+    </RelativeLayout>
 
 </LinearLayout>

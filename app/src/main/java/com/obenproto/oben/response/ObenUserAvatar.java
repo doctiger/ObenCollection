@@ -3,7 +3,7 @@ package com.obenproto.oben.response;
 /**
  * Created by Petro Rington on 12/5/2015.
  */
-public class UserAvatar {
+public class ObenUserAvatar {
 
     private int avatarId;
     private int activation;
@@ -33,7 +33,7 @@ public class UserAvatar {
 
     @Override
     public String toString() {
-        return "UserAvatar{" +
+        return "ObenUserAvatar{" +
                 "avatarId=" + avatarId +
                 ", recordURL='" + recordURL + '\'' +
                 ", message='" + message + '\'' +

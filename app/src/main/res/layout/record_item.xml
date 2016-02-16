@@ -8,49 +8,52 @@
     <TextView
         android:id="@+id/descriptionTxt"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
         android:layout_marginTop="5dp"
         android:text="Name"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="@color/colorBlack" />
+        android:textColor="@color/colorBlack"
+        android:textSize="16dp" />
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp">
 
         <Button
             android:id="@+id/hearSampleBtn"
             android:layout_width="110dp"
             android:layout_height="30dp"
-            android:layout_marginLeft="10dp"
-            android:text="Hear Sample"
-            android:textSize="13dp"
-            android:background="@drawable/button_border"
             android:layout_marginBottom="10dp"
-            android:textColor="@color/colorBlue" />
+            android:layout_marginLeft="10dp"
+            android:background="@drawable/button_border"
+            android:text="Hear Sample"
+            android:textColor="@color/colorBlue"
+            android:textSize="13sp"
+            android:visibility="gone" />
 
         <Button
             android:id="@+id/listenBtn"
             android:layout_width="110dp"
             android:layout_height="30dp"
+            android:layout_marginRight="10dp"
             android:layout_toLeftOf="@+id/recBtn"
             android:layout_toStartOf="@+id/recBtn"
-            android:layout_marginRight="10dp"
-            android:text="LISTEN"
-            android:textSize="13dp"
             android:background="@drawable/button_border_black"
-            android:textColor="@color/colorBlack" />
+            android:text="LISTEN"
+            android:textColor="@color/colorBlack"
+            android:textSize="13sp" />
 
         <Button
             android:id="@+id/recBtn"
             android:layout_width="60dp"
             android:layout_height="30dp"
-            android:text="REC"
-            android:textSize="13dp"
             android:layout_alignParentEnd="true"
             android:layout_marginRight="10dp"
             android:background="@drawable/button_border_red"
-            android:textColor="@color/colorRed" />
+            android:text="REC"
+            android:textColor="@color/colorRed"
+            android:textSize="13sp" />
     </RelativeLayout>
 </LinearLayout>
