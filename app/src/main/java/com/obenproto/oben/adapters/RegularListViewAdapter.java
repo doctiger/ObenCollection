@@ -1,13 +1,18 @@
 package com.obenproto.oben.adapters;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,7 +42,7 @@ import retrofit.Callback;
 import retrofit.Response;
 import retrofit.Retrofit;
 
-public class RegularListViewAdapter extends BaseAdapter {
+public class RegularListViewAdapter extends BaseAdapter implements ActivityCompat.OnRequestPermissionsResultCallback {
 
     public ArrayList<HashMap<String, String>> list;
     public Context cont_;
@@ -53,6 +58,18 @@ public class RegularListViewAdapter extends BaseAdapter {
     int record_index = 0;
     ExtAudioRecorder extAudioRecorder;
     public static MediaPlayer mediaPlayer;
+
+    public static final String TAG = "RegularListViewAdapter";
+
+    /**
+     * Id to identify a microphone permission request.
+     */
+    private static final int REQUEST_MICROPHONE = 0;
+
+    /**
+     * Id to identify a storage permission request.
+     */
+    private static final int REQUEST_STORAGE = 1;
 
     public RegularListViewAdapter(Context context, ArrayList<HashMap<String, String>> list) {
         super();
@@ -211,28 +228,145 @@ public class RegularListViewAdapter extends BaseAdapter {
                 Log.d("d-Debug Recording Flag", String.valueOf(isRecording));
                 Log.d("d-Debug Recording position", String.valueOf(position) + "-" + String.valueOf(record_index));
 
-                recBtn.setText(isRecording ? "REC" : "STOP");
-                isRecording = !isRecording;
+                if (ActivityCompat.checkSelfPermission(cont_, Manifest.permission.RECORD_AUDIO)
+                        != PackageManager.PERMISSION_GRANTED) {
 
-                if (isRecording) {
-                    record_index = position;
+                    // MICROPHONE permission has not been granted.
+                    requestMicrophonePermission();
 
-                    try {
-                        startRecording();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                } else if ((ActivityCompat.checkSelfPermission(cont_, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED)) {
+
+                    // STORAGE permission has not been granted.
+                    requestStoragePermission();
 
                 } else {
-                    int btnIndex = position;
 
-                    stopRecording(list.size() - btnIndex);
+                    Log.i(TAG,
+                            "MICROPHONE and STORAGE permission has already been granted. Starting the record.");
+
+                    // Microphone and Storage permissions is already available
+                    recBtn.setText(isRecording ? "REC" : "STOP");
+                    isRecording = !isRecording;
+
+                    if (isRecording) {
+                        record_index = position;
+
+                        try {
+                            startRecording();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                    } else {
+                        stopRecording(list.size() - position);
+                    }
                 }
-
             }
         });
 
         return convertView;
+    }
+
+    private void requestMicrophonePermission() {
+        Log.i(TAG, "MICROPHONE permission has NOT been granted. Requesting permission.");
+
+        // BEGIN_INCLUDE(microphone_permission_request)
+        if (ActivityCompat.shouldShowRequestPermissionRationale(RegularActivity.activity,
+                Manifest.permission.RECORD_AUDIO)) {
+
+            Log.i(TAG,
+                    "Displaying microphone permission rationale to provide additional context.");
+
+            Snackbar.make(RegularActivity.mLayout, R.string.permission_microphone_rationale,
+                    Snackbar.LENGTH_INDEFINITE)
+                    .setAction(R.string.ok, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            ActivityCompat.requestPermissions(RegularActivity.activity,
+                                    new String[]{Manifest.permission.RECORD_AUDIO},
+                                    REQUEST_MICROPHONE);
+                        }
+                    })
+                    .show();
+        } else {
+            // Microphone permission has not been granted yet. Request it directly.
+            ActivityCompat.requestPermissions(RegularActivity.activity, new String[]{Manifest.permission.RECORD_AUDIO},
+                    REQUEST_MICROPHONE);
+        }
+    }
+
+    private void requestStoragePermission() {
+        Log.i(TAG, "Storage permission has NOT been granted. Requesting permission.");
+
+        // BEGIN_INCLUDE(storage_permission_request)
+        if (ActivityCompat.shouldShowRequestPermissionRationale(RegularActivity.activity,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+
+            Log.i(TAG,
+                    "Displaying storage permission rationale to provide additional context.");
+
+            Snackbar.make(RegularActivity.mLayout, R.string.permission_storage_rationale,
+                    Snackbar.LENGTH_INDEFINITE)
+                    .setAction(R.string.ok, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            ActivityCompat.requestPermissions(RegularActivity.activity,
+                                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                    REQUEST_STORAGE);
+                        }
+                    })
+                    .show();
+        } else {
+            // Storage permission has not been granted yet. Request it directly.
+            ActivityCompat.requestPermissions(RegularActivity.activity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    REQUEST_STORAGE);
+        }
+    }
+
+    /**
+     * Callback received when a permissions request has been completed.
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+
+        if (requestCode == REQUEST_MICROPHONE) {
+            // BEGIN_INCLUDE(permission_result)
+            // Received permission result for microphone permission.
+            Log.i(TAG, "Received response for microphone permission request.");
+
+            // Check if the only required permission has been granted
+            if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Microphone permission has been granted, preview can be displayed
+                Log.i(TAG, "MICROPHONE permission has now been granted.");
+                Snackbar.make(RegularActivity.mLayout, R.string.permission_available_microphone,
+                        Snackbar.LENGTH_SHORT).show();
+            } else {
+                Log.i(TAG, "MICROPHONE permission was NOT granted.");
+                Snackbar.make(RegularActivity.mLayout, R.string.permissions_not_granted,
+                        Snackbar.LENGTH_SHORT).show();
+
+            }
+            // END_INCLUDE(permission_result)
+
+        } else if (requestCode == REQUEST_STORAGE) {
+            Log.i(TAG, "Received response for storage permissions request.");
+
+            // We have requested storage permission, so all of them need to be
+            // checked.
+            if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // All required permissions have been granteds.
+                Log.i(TAG, "SOTRAGE permission has now been granted.");
+                Snackbar.make(RegularActivity.mLayout, R.string.permission_available_storage,
+                        Snackbar.LENGTH_SHORT).show();
+            } else {
+                Log.i(TAG, "Storage permissions were NOT granted.");
+                Snackbar.make(RegularActivity.mLayout, R.string.permissions_not_granted,
+                        Snackbar.LENGTH_SHORT).show();
+            }
+
+        }
     }
 
     // Upload the recorded audio file.

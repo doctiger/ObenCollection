@@ -48,6 +48,7 @@ public class RegularActivity extends Activity {
     public static Map avatarMap;
     SharedPreferences pref;
     SharedPreferences.Editor editor;
+    public static View mLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +56,7 @@ public class RegularActivity extends Activity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.regular_activity);
         activity = this;
+        mLayout = findViewById(R.id.regular_main_activity);
 
         context = this.getBaseContext();
         pref = PreferenceManager.getDefaultSharedPreferences(this);
