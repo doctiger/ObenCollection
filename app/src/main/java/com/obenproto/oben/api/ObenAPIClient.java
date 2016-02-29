@@ -10,13 +10,11 @@ import com.squareup.okhttp.Response;
 import java.io.IOException;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
+import java.util.concurrent.TimeUnit;
 
 import retrofit.GsonConverterFactory;
 import retrofit.Retrofit;
 
-/**
- * Created by Petro Rington on 13.11.2015.
- */
 public class ObenAPIClient {
 
     public static final String BASE_URL = "https://oben.us/";
@@ -53,6 +51,9 @@ public class ObenAPIClient {
     }
 
     public static <S> S newInstance(Class<S> serviceClass) {
+        httpClient.setReadTimeout(120, TimeUnit.SECONDS);
+        httpClient.setConnectTimeout(120, TimeUnit.SECONDS);
+
         Retrofit retrofit = builder.client(httpClient).build();
         return retrofit.create(serviceClass);
     }
