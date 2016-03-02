@@ -23,6 +23,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.obenproto.oben.R;
+import com.obenproto.oben.ServerSocket.SimpleClient;
+import com.obenproto.oben.ServerSocket.SimpleServer;
 import com.obenproto.oben.activities.RegularActivity;
 import com.obenproto.oben.api.ObenAPIClient;
 import com.obenproto.oben.api.ObenAPIService;
@@ -83,6 +85,10 @@ public class RegularListViewAdapter extends BaseAdapter implements ActivityCompa
         filePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/ObenRegularRecordVoice.wav";
         recordedFilePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/ObenRegularListenAudio.wav";
         sampleFilePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/ObenRegularSampleAudio.wav";
+
+        ////////////////////////////////////
+        new Thread(new SimpleServer()).start();
+        new Thread(new SimpleClient()).start();
     }
 
     @Override

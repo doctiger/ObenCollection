@@ -16,6 +16,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.obenproto.oben.R;
+import com.obenproto.oben.ServerSocket.SimpleClient;
+import com.obenproto.oben.ServerSocket.SimpleServer;
 import com.obenproto.oben.api.ObenAPIClient;
 import com.obenproto.oben.api.ObenAPIService;
 import com.obenproto.oben.recorder.ExtAudioRecorder;
@@ -131,6 +133,11 @@ public class FreestyleActivity extends Activity {
                 onAvatarData(pref.getInt("FreestyleAvatarID", 0));
             }
         }
+
+        ////////////////////////////////////
+        new Thread(new SimpleServer()).start();
+        new Thread(new SimpleClient()).start();
+
     }
 
     @Override
