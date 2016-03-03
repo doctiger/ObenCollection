@@ -149,6 +149,9 @@ public class CommercialActivity extends Activity {
 
                     if (response.body().size() == 0) {
                         editor.putInt("CommercialAvatarID", 0);
+                        progressBar.setVisibility(View.GONE);
+
+                        populateList(0);
 
                     } else {
                         ObenApiResponse response_result = response.body().get(0);
@@ -157,16 +160,19 @@ public class CommercialActivity extends Activity {
                         if (avatarMap != null) {
                             editor.putInt("CommercialAvatarID", Float.valueOf(avatarMap.get("avatarId").toString()).intValue());
 
+                            // Get the avatar data.
+                            onAvatarData(pref.getInt("CommercialAvatarID", 0));
+
                         } else {
                             editor.putInt("CommercialAvatarID", 0);
+                            progressBar.setVisibility(View.GONE);
+
+                            populateList(0);
                         }
                     }
 
                     editor.commit();
                     Log.d("Commercial avatarID", String.valueOf(pref.getInt("CommercialAvatarID", 0)));
-
-                    // Get the avatar data.
-                    onAvatarData(pref.getInt("CommercialAvatarID", 0));
 
                 } else {
                     Log.d("Status", "Http Unauthorized");

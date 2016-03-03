@@ -151,6 +151,9 @@ public class RegularActivity extends Activity {
 
                     if (response.body().size() == 0) {
                         editor.putInt("RegularAvatarID", 0);
+                        progressBar.setVisibility(View.GONE);
+
+                        populateList(0);
 
                     } else {
                         ObenApiResponse response_result = response.body().get(0);
@@ -159,16 +162,19 @@ public class RegularActivity extends Activity {
                         if (avatarMap != null) {
                             editor.putInt("RegularAvatarID", Float.valueOf(avatarMap.get("avatarId").toString()).intValue());
 
+                            // Get the avatar data.
+                            onAvatarData(pref.getInt("RegularAvatarID", 0));
+
                         } else {
                             editor.putInt("RegularAvatarID", 0);
+                            progressBar.setVisibility(View.GONE);
+
+                            populateList(0);
                         }
                     }
 
-                    editor.commit();
+                    editor.apply();
                     Log.d("regular avatarID", String.valueOf(pref.getInt("RegularAvatarID", 0)));
-
-                    // Get the avatar data.
-                    onAvatarData(pref.getInt("RegularAvatarID", 0));
 
                 } else {
                     Log.d("Status", "Http Unauthorized");

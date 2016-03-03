@@ -73,6 +73,9 @@ public class OptionActivity extends Activity {
         cancelLbl.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                editor.putString("InitialLogin", "yes");
+                editor.apply();
+
                 startActivity(new Intent(OptionActivity.this, ProfileActivity.class));
                 finish();
             }
@@ -92,6 +95,9 @@ public class OptionActivity extends Activity {
 
     @Override
     public void onBackPressed() {
+        editor.putString("InitialLogin", "yes");
+        editor.apply();
+
         startActivity(new Intent(OptionActivity.this, ProfileActivity.class));
         finish();
     }
