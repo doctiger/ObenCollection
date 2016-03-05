@@ -14,6 +14,7 @@ import android.view.Window;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.obenproto.oben.R;
 import com.obenproto.oben.adapters.RegularListViewAdapter;
@@ -49,6 +50,9 @@ public class RegularActivity extends Activity {
     SharedPreferences pref;
     SharedPreferences.Editor editor;
     public static View mLayout;
+    String UNAUTHORIZED_TOAST = "We have experienced a Network Error. " +
+            "We have successfully saved all your work and you can now resume" +
+            " where you left off. We apologize for any inconvenience.";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -232,7 +236,11 @@ public class RegularActivity extends Activity {
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("Status", "Http Unauthorized");
-                    startActivity(new Intent(RegularActivity.this, OptionActivity.class));
+                    Toast.makeText(getApplicationContext(), UNAUTHORIZED_TOAST, Toast.LENGTH_LONG).show();
+                    editor.putString("InitialLogin", "no");
+                    editor.apply();
+
+                    startActivity(new Intent(RegularActivity.this, ProfileActivity.class));
                     finish();
 
                 } else {
@@ -270,7 +278,11 @@ public class RegularActivity extends Activity {
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("Status", "Http Unauthorized");
-                    startActivity(new Intent(RegularActivity.this, OptionActivity.class));
+                    Toast.makeText(getApplicationContext(), UNAUTHORIZED_TOAST, Toast.LENGTH_LONG).show();
+                    editor.putString("InitialLogin", "no");
+                    editor.apply();
+
+                    startActivity(new Intent(RegularActivity.this, ProfileActivity.class));
                     finish();
 
                 } else {

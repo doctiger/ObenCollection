@@ -2,6 +2,7 @@ package com.obenproto.oben.adapters;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -21,6 +22,7 @@ import com.obenproto.oben.R;
 import com.obenproto.oben.ServerSocket.SimpleClient;
 import com.obenproto.oben.ServerSocket.SimpleServer;
 import com.obenproto.oben.activities.CommercialActivity;
+import com.obenproto.oben.activities.ProfileActivity;
 import com.obenproto.oben.api.ObenAPIClient;
 import com.obenproto.oben.api.ObenAPIService;
 import com.obenproto.oben.recorder.ExtAudioRecorder;
@@ -58,6 +60,8 @@ public class CommercialListViewAdapter extends BaseAdapter {
     int record_index = 0;
     ExtAudioRecorder extAudioRecorder;
     public static MediaPlayer mediaPlayerListen;
+    public static final String UNAUTHORIZED_TOAST = "We have experienced a Network Error. " +
+            "We have successfully saved all your work and you can now resume where you left off. We apologize for any inconvenience.";
 
     public CommercialListViewAdapter(Context context, ArrayList<HashMap<String, String>> list) {
         super();
@@ -282,6 +286,12 @@ public class CommercialListViewAdapter extends BaseAdapter {
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("d-Status", "Http Unauthorized");
+                    Toast.makeText(cont_, UNAUTHORIZED_TOAST, Toast.LENGTH_LONG).show();
+                    editor.putString("InitialLogin", "no");
+                    editor.apply();
+
+                    CommercialActivity.activity.startActivity(new Intent(CommercialActivity.activity, ProfileActivity.class));
+                    CommercialActivity.activity.finish();
 
                 } else {
                     Log.d("d-Status", "Server Connection Failure");

@@ -3,6 +3,7 @@ package com.obenproto.oben.activities;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Environment;
@@ -49,6 +50,8 @@ public class FreestyleActivity extends Activity {
     int userId = 0;
     private static String filePath;
     ExtAudioRecorder extAudioRecorder;
+    public static final String UNAUTHORIZED_TOAST = "We have experienced a Network Error. " +
+            "We have successfully saved all your work and you can now resume where you left off. We apologize for any inconvenience.";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -237,6 +240,12 @@ public class FreestyleActivity extends Activity {
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("Status", "Http Unauthorized");
+                    Toast.makeText(getApplicationContext(), UNAUTHORIZED_TOAST, Toast.LENGTH_LONG).show();
+                    editor.putString("InitialLogin", "no");
+                    editor.apply();
+
+                    startActivity(new Intent(FreestyleActivity.this, ProfileActivity.class));
+                    finish();
 
                 } else {
                     Log.d("Status", "Connection Failure");
@@ -326,6 +335,12 @@ public class FreestyleActivity extends Activity {
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("Status", "Http Unauthorized");
+                    Toast.makeText(getApplicationContext(), UNAUTHORIZED_TOAST, Toast.LENGTH_LONG).show();
+                    editor.putString("InitialLogin", "no");
+                    editor.apply();
+
+                    startActivity(new Intent(FreestyleActivity.this, ProfileActivity.class));
+                    finish();
 
                 } else {
                     Log.d("Status", "Server Connection Failure");

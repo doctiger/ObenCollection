@@ -3,6 +3,7 @@ package com.obenproto.oben.adapters;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
@@ -25,6 +26,7 @@ import android.widget.Toast;
 import com.obenproto.oben.R;
 import com.obenproto.oben.ServerSocket.SimpleClient;
 import com.obenproto.oben.ServerSocket.SimpleServer;
+import com.obenproto.oben.activities.ProfileActivity;
 import com.obenproto.oben.activities.RegularActivity;
 import com.obenproto.oben.api.ObenAPIClient;
 import com.obenproto.oben.api.ObenAPIService;
@@ -62,6 +64,8 @@ public class RegularListViewAdapter extends BaseAdapter implements ActivityCompa
     public static MediaPlayer mediaPlayer;
 
     public static final String TAG = "RegularListViewAdapter";
+    public static final String UNAUTHORIZED_TOAST = "We have experienced a Network Error. " +
+            "We have successfully saved all your work and you can now resume where you left off. We apologize for any inconvenience.";
 
     /**
      * Id to identify a microphone permission request.
@@ -413,6 +417,12 @@ public class RegularListViewAdapter extends BaseAdapter implements ActivityCompa
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("d-Status", "Http Unauthorized");
+                    Toast.makeText(cont_, UNAUTHORIZED_TOAST, Toast.LENGTH_LONG).show();
+                    editor.putString("InitialLogin", "no");
+                    editor.apply();
+
+                    RegularActivity.activity.startActivity(new Intent(RegularActivity.activity, ProfileActivity.class));
+                    RegularActivity.activity.finish();
 
                 } else {
                     Log.d("d-Status", "Server Connection Failure");
@@ -452,6 +462,7 @@ public class RegularListViewAdapter extends BaseAdapter implements ActivityCompa
         Log.d("d-audio file path : ", filePath);
         File audioFileName = new File(filePath);
         RequestBody requestBody = RequestBody.create(MediaType.parse("audio/wav"), audioFileName);
+
         onSaveRegularAvatar(pref.getInt("userID", 0),
                 btnIndex,
                 requestBody,

@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.Window;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.obenproto.oben.R;
 import com.obenproto.oben.api.ObenAPIClient;
@@ -30,12 +31,19 @@ public class ProfileActivity extends Activity {
     SharedPreferences.Editor editor;
     ProgressBar progressBar;
     TextView setupAvatar, logoutTxt;
+    public static Activity activity = null;
+
+    String UNAUTHORIZED_TOAST = "We have experienced a Network Error. " +
+            "We have successfully saved all your work and you can now resume" +
+            " where you left off. We apologize for any inconvenience.";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.profile_activity);
+
+        activity = this;
 
         pref = PreferenceManager.getDefaultSharedPreferences(this);
         editor = pref.edit();
@@ -160,6 +168,7 @@ public class ProfileActivity extends Activity {
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("Status", "Http Unauthorized");
                     logoutTxt.setEnabled(true);
+                    Toast.makeText(getApplicationContext(), UNAUTHORIZED_TOAST, Toast.LENGTH_LONG).show();
 
                 } else {
                     Log.d("Status", "Server Connection Failure");
@@ -208,6 +217,13 @@ public class ProfileActivity extends Activity {
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("User login Status", "Http Unauthorized");
+                    Toast.makeText(getApplicationContext(), UNAUTHORIZED_TOAST, Toast.LENGTH_LONG).show();
+                    editor.putString("InitialLogin", "no");
+                    editor.apply();
+
+                    activity.finish();
+                    activity.startActivity(activity.getIntent());
+
 
                 } else {
                     Log.d("User login Status", "Server Connection Failure");

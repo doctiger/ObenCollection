@@ -1,8 +1,8 @@
 package com.obenproto.oben.activities;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.Window;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.obenproto.oben.R;
 import com.obenproto.oben.api.ObenAPIClient;
@@ -31,6 +32,9 @@ public class OptionActivity extends Activity {
     SharedPreferences pref;
     SharedPreferences.Editor editor;
     ProgressBar progressBar;
+    String UNAUTHORIZED_TOAST = "We have experienced a Network Error. " +
+            "We have successfully saved all your work and you can now resume" +
+            " where you left off. We apologize for any inconvenience.";
 
     @SuppressLint("CommitPrefEdits")
     @Override
@@ -133,6 +137,13 @@ public class OptionActivity extends Activity {
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("Status", "Http Unauthorized");
                     logoutLbl.setEnabled(true);
+
+                    Toast.makeText(getApplicationContext(), UNAUTHORIZED_TOAST, Toast.LENGTH_LONG).show();
+                    editor.putString("InitialLogin", "no");
+                    editor.apply();
+
+                    startActivity(new Intent(OptionActivity.this, ProfileActivity.class));
+                    finish();
 
                 } else {
                     Log.d("Status", "Server Connection Failure");

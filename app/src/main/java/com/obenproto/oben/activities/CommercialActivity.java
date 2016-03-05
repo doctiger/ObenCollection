@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -13,6 +14,7 @@ import android.view.Window;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.obenproto.oben.R;
 import com.obenproto.oben.adapters.CommercialListViewAdapter;
@@ -47,6 +49,8 @@ public class CommercialActivity extends Activity {
     public static Map avatarMap;
     SharedPreferences pref;
     SharedPreferences.Editor editor;
+    public static final String UNAUTHORIZED_TOAST = "We have experienced a Network Error. " +
+            "We have successfully saved all your work and you can now resume where you left off. We apologize for any inconvenience.";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -225,6 +229,12 @@ public class CommercialActivity extends Activity {
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("Status", "Http Unauthorized");
+                    Toast.makeText(getApplicationContext(), UNAUTHORIZED_TOAST, Toast.LENGTH_LONG).show();
+                    editor.putString("InitialLogin", "no");
+                    editor.apply();
+
+                    startActivity(new Intent(CommercialActivity.this, ProfileActivity.class));
+                    finish();
 
                 } else {
                     Log.d("Status", "Server Connection Failure");
@@ -260,6 +270,12 @@ public class CommercialActivity extends Activity {
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("Status", "Http Unauthorized");
+                    Toast.makeText(getApplicationContext(), UNAUTHORIZED_TOAST, Toast.LENGTH_LONG).show();
+                    editor.putString("InitialLogin", "no");
+                    editor.apply();
+
+                    startActivity(new Intent(CommercialActivity.this, ProfileActivity.class));
+                    finish();
 
                 } else {
                     Log.d("Status", "Server Connection Failure");
