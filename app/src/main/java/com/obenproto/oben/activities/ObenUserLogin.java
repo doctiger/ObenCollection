@@ -39,9 +39,6 @@ public class ObenUserLogin extends Activity {
     public static ProgressBar progressBar;
     String errorMsg = "ERROR";
     String successMsg = "SUCCESS";
-    String UNAUTHORIZED_TOAST = "We have experienced a Network Error. " +
-            "We have successfully saved all your work and you can now resume" +
-            " where you left off. We apologize for any inconvenience.";
 
     @SuppressLint("CommitPrefEdits")
     @Override
@@ -145,7 +142,7 @@ public class ObenUserLogin extends Activity {
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("User Login Status :", "Http Unauthorized");
                     progressBar.setVisibility(View.GONE);
-                    Toast.makeText(getApplicationContext(), UNAUTHORIZED_TOAST, Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), R.string.unauthorized_toast_msg, Toast.LENGTH_LONG).show();
 
                 } else {
                     Log.d("User Login Status", "Server Connection Failure");

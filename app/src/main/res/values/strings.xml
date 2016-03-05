@@ -12,12 +12,27 @@
     <string name="start_recording">Record</string>
     <string name="stop_recording">Stop</string>
     <string name="audio_format">Format</string>
-    <string name="header_description">When the sunlight strikes raindrops in the air, they act like a prism and form a rainbow.</string>
+    <string name="header_description">
+        When the sunlight strikes raindrops in the air, they act like a prism and form a rainbow.
+    </string>
     <string name="cancelButtonStr"><![CDATA[Save & Exit]]></string>
 
-    <string name="permission_available_microphone">Microphone Permission has been granted. Microphone can now be recorded.</string>
-    <string name="permission_available_storage">Storage Permissions have been granted. Storage can now be writed.</string>
+    <string name="permission_available_microphone">
+        Microphone Permission has been granted. Microphone can now be recorded.</string>
+    <string name="permission_available_storage">
+        Storage Permissions have been granted. Storage can now be writed.</string>
     <string name="permissions_not_granted">Permissions were not granted.</string>
-    <string name="permission_microphone_rationale">Microphone permission is needed to record the voice.</string>
-    <string name="permission_storage_rationale">Storage permissions are needed to write the storage.</string>
+    <string name="permission_microphone_rationale">
+        Microphone permission is needed to record the voice.
+    </string>
+    <string name="permission_storage_rationale">
+        Storage permissions are needed to write the storage.
+    </string>
+    <string name="unauthorized_toast_msg">
+        We have experienced a Network Error. We have successfully
+        saved all your work and you can now resume where you left off. We apologize for any inconvenience.
+    </string>
+    <string name="exit_message_str">
+        All of your recordings have been saved. You may return and continue recording where you left off at any time.
+    </string>
 </resources>
