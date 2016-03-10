@@ -131,7 +131,7 @@ public class OptionActivity extends Activity {
                     editor.commit();
 
                     // Go to the Login page.
-                    startActivity(new Intent(OptionActivity.this, ObenUserLogin.class));
+                    startActivity(new Intent(OptionActivity.this, LoginActivity.class));
                     finish();
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {

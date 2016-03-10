@@ -162,7 +162,7 @@ public class ProfileActivity extends Activity {
                     editor.commit();
 
                     // Go to the Login page.
-                    startActivity(new Intent(ProfileActivity.this, ObenUserLogin.class));
+                    startActivity(new Intent(ProfileActivity.this, LoginActivity.class));
                     finish();
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
