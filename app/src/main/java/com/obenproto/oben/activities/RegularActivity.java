@@ -20,7 +20,7 @@ import com.obenproto.oben.R;
 import com.obenproto.oben.adapters.RegularListViewAdapter;
 import com.obenproto.oben.api.ObenAPIClient;
 import com.obenproto.oben.api.ObenAPIService;
-import com.obenproto.oben.response.ObenApiResponse;
+import com.obenproto.oben.api.response.ObenApiResponse;
 
 import java.net.HttpURLConnection;
 import java.util.ArrayList;

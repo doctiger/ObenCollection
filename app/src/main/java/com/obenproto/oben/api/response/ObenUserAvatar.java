@@ -1,8 +1,5 @@
-package com.obenproto.oben.response;
+package com.obenproto.oben.api.response;
 
-/**
- * Created by Petro Rington on 12/5/2015.
- */
 public class ObenUserAvatar {
 
     private int avatarId;
@@ -29,16 +26,6 @@ public class ObenUserAvatar {
 
     public String getStatus() {
         return status;
-    }
-
-    @Override
-    public String toString() {
-        return "ObenUserAvatar{" +
-                "avatarId=" + avatarId +
-                ", recordURL='" + recordURL + '\'' +
-                ", message='" + message + '\'' +
-                ", status='" + status + '\'' +
-                '}';
     }
 }
 

@@ -1,8 +1,5 @@
-package com.obenproto.oben.response;
+package com.obenproto.oben.api.response;
 
-/**
- * Created by Petro Rington on 12/5/2015.
- */
 public class ObenAvatar {
 
     private String message;

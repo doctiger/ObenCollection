@@ -31,7 +31,7 @@ import com.obenproto.oben.activities.RegularActivity;
 import com.obenproto.oben.api.ObenAPIClient;
 import com.obenproto.oben.api.ObenAPIService;
 import com.obenproto.oben.recorder.ExtAudioRecorder;
-import com.obenproto.oben.response.ObenApiResponse;
+import com.obenproto.oben.api.response.ObenApiResponse;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.RequestBody;
 

@@ -16,7 +16,7 @@ import android.widget.Toast;
 import com.obenproto.oben.R;
 import com.obenproto.oben.api.ObenAPIClient;
 import com.obenproto.oben.api.ObenAPIService;
-import com.obenproto.oben.response.ObenApiResponse;
+import com.obenproto.oben.api.response.ObenApiResponse;
 
 import java.net.HttpURLConnection;
 
@@ -115,7 +115,7 @@ public class OptionActivity extends Activity {
                 progressBar.setVisibility(View.GONE);
                 if (response.code() == HttpURLConnection.HTTP_OK) { // success
                     ObenApiResponse response_result = response.body();
-                    String message = response_result.User.getMessage();
+                    String message = response_result.User.message;
                     Log.d("Logout Sucess:", message);
 
                     // Save the avatar ID to shared preference.

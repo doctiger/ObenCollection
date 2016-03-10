@@ -1,4 +1,4 @@
-package com.obenproto.oben.response;
+package com.obenproto.oben.api.response;
 
 public class ObenPhrases {
     private String example;
@@ -17,13 +17,4 @@ public class ObenPhrases {
     public String getSentence() {
         return sentence;
     }
-
-//    @Override
-//    public String toString() {
-//        return "ObenPhrases{" +
-//                "example='" + example + '\'' +
-//                ", recordId=" + recordId +
-//                ", sentence='" + sentence + '\'' +
-//                '}';
-//    }
 }

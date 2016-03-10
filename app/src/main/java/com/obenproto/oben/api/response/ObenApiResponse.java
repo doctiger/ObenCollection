@@ -1,4 +1,6 @@
-package com.obenproto.oben.response;
+package com.obenproto.oben.api.response;
+
+import com.obenproto.oben.api.domain.ObenUser;
 
 public class ObenApiResponse {
 

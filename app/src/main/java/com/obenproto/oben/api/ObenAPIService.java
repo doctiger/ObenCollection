@@ -1,6 +1,8 @@
 package com.obenproto.oben.api;
 
-import com.obenproto.oben.response.ObenApiResponse;
+import com.obenproto.oben.api.response.GetUserAvatarResponse;
+import com.obenproto.oben.api.response.LoginResponse;
+import com.obenproto.oben.api.response.ObenApiResponse;
 import com.squareup.okhttp.RequestBody;
 
 import java.util.List;
@@ -14,17 +16,14 @@ import retrofit.http.POST;
 import retrofit.http.Part;
 import retrofit.http.Path;
 
-/**
- * Created by Petro Rington on 12.11.2015.
- */
 public interface ObenAPIService {
 
     ////  Recall of user login
     @FormUrlEncoded
     @POST("morphing/ws/MorphingService/loginUser")
-    Call<ObenApiResponse> userLogin(@Field("userEmail") String userEmail,
-                                    @Field("userPassword") String userPassword,
-                                    @Field("userDisplayName") String userDisplayName);
+    Call<LoginResponse> userLogin(@Field("userEmail") String userEmail,
+                                  @Field("userPassword") String userPassword,
+                                  @Field("userDisplayName") String userDisplayName);
 
     ////  Recall of save user avatar ( ​updated since 1.0 release ​)
     @Multipart
@@ -86,7 +85,7 @@ public interface ObenAPIService {
 
     ////    Recall of user avatar
     @GET("morphing/ws/MorphingService/getUserAvatar/{userId}")
-    Call<ObenApiResponse> getUserAvatar(@Path("userId") int userId);
+    Call<GetUserAvatarResponse> getUserAvatar(@Path("userId") int userId);
 
     ////    Recall of user logout
     @POST("morphing/ws/MorphingService/logoutUser")

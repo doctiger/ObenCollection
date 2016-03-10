@@ -48,13 +48,17 @@ public class ObenAPIClient {
         CookieManager cookieManager = new CookieManager();
         cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
         httpClient.setCookieHandler(cookieManager); //finally set the cookie handler on client
+
+        httpClient.setReadTimeout(120, TimeUnit.SECONDS);
+        httpClient.setConnectTimeout(120, TimeUnit.SECONDS);
     }
 
     public static <S> S newInstance(Class<S> serviceClass) {
-        httpClient.setReadTimeout(120, TimeUnit.SECONDS);
-        httpClient.setConnectTimeout(120, TimeUnit.SECONDS);
-
         Retrofit retrofit = builder.client(httpClient).build();
         return retrofit.create(serviceClass);
+    }
+
+    public static ObenAPIService getAPIService() {
+        return newInstance(ObenAPIService.class);
     }
 }
