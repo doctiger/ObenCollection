@@ -47,6 +47,7 @@ public class OptionActivity extends BaseActivity implements View.OnClickListener
 
     private void showLoginPage() {
         Intent intent = new Intent(OptionActivity.this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
     }

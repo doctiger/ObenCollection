@@ -1,10 +1,13 @@
 package com.obenproto.oben.api;
 
+import com.obenproto.oben.api.domain.ObenPhrase;
+import com.obenproto.oben.api.response.GetAllUserAvatarsResponse;
 import com.obenproto.oben.api.response.GetUserAvatarResponse;
 import com.obenproto.oben.api.response.LoginResponse;
 import com.obenproto.oben.api.response.ObenApiResponse;
 import com.squareup.okhttp.RequestBody;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit.Call;
@@ -96,10 +99,13 @@ public interface ObenAPIService {
     Call<ObenApiResponse> getAvatarData(@Path("avatarId") int avatarId);
 
     /**
-     * Get the avatar ID for Regular
+     * Get all user avatars.
+     *
+     * @param userId User ID.
+     * @return All user avatars as ArrayList object.
      */
-    @GET("morphing/ws/MorphingService/getAvatars/{userId}/mode/1")
-    Call<List<ObenApiResponse>> getRegularAvatars(@Path("userId") int userId);
+    @GET("morphing/ws/MorphingService/getAllUserAvatars/{userId}")
+    Call<GetAllUserAvatarsResponse> getAllUserAvatars(@Path("userId") Integer userId);
 
     /**
      * Get the avatar ID for Commercial
@@ -113,7 +119,12 @@ public interface ObenAPIService {
     @GET("morphing/ws/MorphingService/getAvatars/{userId}/mode/3")
     Call<List<ObenApiResponse>> getFreestyleAvatars(@Path("userId") int userId);
 
-    ////    Recall of phrase data
-    @GET("morphing/ws/MorphingService/getPhrases/mode/{level}")
-    Call<List<ObenApiResponse>> getPhraseData(@Path("level") int level);
+    /**
+     * Get all phrases.
+     *
+     * @param mode User mode.
+     * @return All phrases as list object.
+     */
+    @GET("morphing/ws/MorphingService/getPhrases/mode/{mode}")
+    Call<ArrayList<ObenPhrase>> getPhraseData(@Path("mode") int mode);
 }

@@ -65,7 +65,7 @@
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="1"
+                    android:layout_weight="3"
                     android:orientation="vertical">
 
                     <TextView
@@ -73,17 +73,35 @@
                         android:layout_height="wrap_content"
                         android:gravity="end"
                         android:text="@string/User_ID"
-                        android:textColor="#008DFF"
-                        android:textSize="16sp" />
+                        android:textColor="@color/oben_blue"
+                        android:textSize="14sp" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="20dp"
                         android:gravity="end"
-                        android:text="@string/Avatar_ID"
-                        android:textColor="#008DFF"
-                        android:textSize="16sp" />
+                        android:text="@string/Regular_Avatar_ID"
+                        android:textColor="@color/oben_blue"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:gravity="end"
+                        android:text="@string/Commercial_Avatar_ID"
+                        android:textColor="@color/oben_blue"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:gravity="end"
+                        android:text="@string/Freestyle_Avatar_ID"
+                        android:textColor="@color/oben_blue"
+                        android:textSize="14sp" />
 
                     <TextView
                         android:layout_width="match_parent"
@@ -91,42 +109,58 @@
                         android:layout_marginTop="20dp"
                         android:gravity="end"
                         android:text="@string/Email"
-                        android:textColor="#008DFF"
-                        android:textSize="16sp" />
+                        android:textColor="@color/oben_blue"
+                        android:textSize="14sp" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="2"
+                    android:layout_weight="3"
                     android:orientation="vertical"
                     android:paddingLeft="20dp"
                     android:paddingRight="20dp">
 
                     <TextView
-                        android:id="@+id/userIDLbl"
+                        android:id="@+id/tv_user_id"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="start"
-                        android:textColor="#000000"
-                        android:textSize="16sp"
+                        android:textColor="@android:color/black"
+                        android:textSize="14sp"
                         android:textStyle="normal" />
 
                     <TextView
-                        android:id="@+id/avatarIDLbl"
+                        android:id="@+id/tv_regular_avatar"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="20dp"
                         android:textColor="@android:color/black"
-                        android:textSize="16sp" />
+                        android:textSize="14sp" />
 
                     <TextView
-                        android:id="@+id/userEmailLbl"
+                        android:id="@+id/tv_commercial_avatar"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="20dp"
                         android:textColor="@android:color/black"
-                        android:textSize="16sp" />
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/tv_freestyle_avatar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:textColor="@android:color/black"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/tv_user_email"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:textColor="@android:color/black"
+                        android:textSize="14sp" />
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>

@@ -10,8 +10,9 @@ import android.widget.TextView;
 import com.obenproto.oben.R;
 import com.obenproto.oben.activities.base.BaseActivity;
 import com.obenproto.oben.api.ObenAPIClient;
+import com.obenproto.oben.api.domain.AvatarInfo;
 import com.obenproto.oben.api.domain.ObenUser;
-import com.obenproto.oben.api.response.GetUserAvatarResponse;
+import com.obenproto.oben.api.response.GetAllUserAvatarsResponse;
 
 import java.net.HttpURLConnection;
 
@@ -22,7 +23,7 @@ import retrofit.Retrofit;
 
 public class ProfileActivity extends BaseActivity implements View.OnClickListener {
 
-    TextView userIDTxt, userEmailTxt, avatarIDTxt;
+    TextView tvUserID, tvEmail, tvRegular, tvCommercial, tvFreestyle;
     RelativeLayout progressView;
 
     @Override
@@ -32,9 +33,11 @@ public class ProfileActivity extends BaseActivity implements View.OnClickListene
         setContentView(R.layout.profile_activity);
 
         progressView = (RelativeLayout) findViewById(R.id.layout_progress_view);
-        userIDTxt = (TextView) findViewById(R.id.userIDLbl);
-        userEmailTxt = (TextView) findViewById(R.id.userEmailLbl);
-        avatarIDTxt = (TextView) findViewById(R.id.avatarIDLbl);
+        tvUserID = (TextView) findViewById(R.id.tv_user_id);
+        tvEmail = (TextView) findViewById(R.id.tv_user_email);
+        tvRegular = (TextView) findViewById(R.id.tv_regular_avatar);
+        tvCommercial = (TextView) findViewById(R.id.tv_commercial_avatar);
+        tvFreestyle = (TextView) findViewById(R.id.tv_freestyle_avatar);
 
         // Map event handlers.
         findViewById(R.id.setUpAvatarLbl).setOnClickListener(this);
@@ -43,26 +46,27 @@ public class ProfileActivity extends BaseActivity implements View.OnClickListene
         // Setup user info.
         ObenUser user = ObenUser.getSavedUser();
         if (user != null) {
-            userIDTxt.setText(String.valueOf(user.userId));
-            userEmailTxt.setText(user.email);
+            tvUserID.setText(String.valueOf(user.userId));
+            tvEmail.setText(user.email);
         }
 
         // Recall getUserAvatar endpoint.
-        getUserAvatar();
+        getAllUserAvatars();
     }
 
-    private void getUserAvatar() {
+    private void getAllUserAvatars() {
         ObenUser user = ObenUser.getSavedUser();
         if (user != null) {
             progressView.setVisibility(View.VISIBLE);
-            Call<GetUserAvatarResponse> call = ObenAPIClient.getAPIService().getUserAvatar(user.userId);
-            call.enqueue(new Callback<GetUserAvatarResponse>() {
+            Call<GetAllUserAvatarsResponse> call = ObenAPIClient.getAPIService().getAllUserAvatars(user.userId);
+            call.enqueue(new Callback<GetAllUserAvatarsResponse>() {
                 @Override
-                public void onResponse(Response<GetUserAvatarResponse> response, Retrofit retrofit) {
+                public void onResponse(Response<GetAllUserAvatarsResponse> response, Retrofit retrofit) {
                     progressView.setVisibility(View.GONE);
                     if (response.code() == HttpURLConnection.HTTP_OK) {
-                        String avatarID = String.valueOf(response.body().UserAvatar.avatarId);
-                        avatarIDTxt.setText(avatarID);
+                        if (response.body() != null) {
+                            showAvatarInfo(response.body());
+                        }
                     } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                         helperUtils.showMessage(R.string.unauthorized_toast);
                         showLoginPage();
@@ -72,8 +76,31 @@ public class ProfileActivity extends BaseActivity implements View.OnClickListene
                 @Override
                 public void onFailure(Throwable t) {
                     progressView.setVisibility(View.GONE);
+                    helperUtils.showMessage(t.getLocalizedMessage());
                 }
             });
+        }
+    }
+
+    private void showAvatarInfo(GetAllUserAvatarsResponse response) {
+        String notExist = "Not exist";
+        AvatarInfo regular = response.getAvatar(1);
+        AvatarInfo commercial = response.getAvatar(2);
+        AvatarInfo freestyle = response.getAvatar(3);
+        if (regular != null) {
+            tvRegular.setText(String.valueOf(regular.Avatar.avatarId));
+        } else {
+            tvRegular.setText(notExist);
+        }
+        if (commercial != null) {
+            tvCommercial.setText(String.valueOf(commercial.Avatar.avatarId));
+        } else {
+            tvCommercial.setText(notExist);
+        }
+        if (freestyle != null) {
+            tvFreestyle.setText(String.valueOf(freestyle.Avatar.avatarId));
+        } else {
+            tvFreestyle.setText(notExist);
         }
     }
 

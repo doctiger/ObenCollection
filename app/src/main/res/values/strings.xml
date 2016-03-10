@@ -39,6 +39,9 @@
     <string name="Setup_Your_Avatar">Setup Your Avatar</string>
     <string name="User_ID">User ID</string>
     <string name="Avatar_ID">Avatar ID</string>
+    <string name="Regular_Avatar_ID">Regular Avatar ID</string>
+    <string name="Commercial_Avatar_ID">Commercial Avatar ID</string>
+    <string name="Freestyle_Avatar_ID">Freestyle Avatar ID</string>
 
     <!-- String Resources for Option Activity -->
     <string name="Cancel">Cancel</string>
