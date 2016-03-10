@@ -2,108 +2,76 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#ffffff"
+    android:background="@android:color/white"
     android:orientation="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="0.1"
         android:background="@drawable/rounded_edittext"
-        android:gravity="center">
+        android:orientation="horizontal"
+        android:padding="20dp">
 
         <TextView
             android:id="@+id/cancelBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="5sp"
             android:layout_weight="1"
-            android:text="Cancel"
-            android:textColor="#000000"
+            android:text="@string/Cancel"
+            android:textColor="@android:color/black"
             android:textSize="20sp" />
 
         <TextView
             android:id="@+id/logoutBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignTop="@+id/textView2"
-            android:layout_marginRight="10sp"
             android:layout_weight="1"
-            android:gravity="right"
-            android:text="Logout"
-            android:textColor="#008DFF"
+            android:gravity="end"
+            android:text="@string/Logout"
+            android:textColor="@color/oben_blue"
             android:textSize="19sp" />
-
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="0.5"
-        android:gravity="bottom"
+        android:layout_height="match_parent"
+        android:layout_margin="40dp"
+        android:gravity="center_vertical"
         android:orientation="vertical">
-
-        <ProgressBar
-            android:id="@+id/progressBar"
-            style="?android:attr/progressBarStyleLargeInverse"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:progress="@android:integer/config_mediumAnimTime"
-            android:progressDrawable="@drawable/circular_progress_view" />
 
         <TextView
             android:id="@+id/regularLbl"
             android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_gravity="bottom"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
+            android:layout_height="wrap_content"
             android:background="@drawable/button_border"
             android:gravity="center"
-            android:text="Regular"
-            android:textColor="#008DFF"
-            android:textSize="22dp"
-            android:textStyle="normal" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1">
+            android:padding="8dp"
+            android:text="@string/Regular"
+            android:textColor="@color/oben_blue"
+            android:textSize="20sp" />
 
         <TextView
             android:id="@+id/commercialLbl"
             android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_gravity="center"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
             android:background="@drawable/button_border"
             android:gravity="center"
-            android:text="Commercial"
-            android:textColor="#008DFF"
-            android:textSize="22dp"
-            android:textStyle="normal" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1">
+            android:padding="8dp"
+            android:text="@string/Commercial"
+            android:textColor="@color/oben_blue"
+            android:textSize="20sp" />
 
         <TextView
             android:id="@+id/freestyleLbl"
             android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_gravity="top"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
             android:background="@drawable/button_border"
             android:gravity="center"
-            android:text="Freestyle"
-            android:textColor="#008DFF"
-            android:textSize="22dp"
-            android:textStyle="normal" />
+            android:padding="8dp"
+            android:text="@string/Freestyle"
+            android:textColor="@color/oben_blue"
+            android:textSize="20sp" />
     </LinearLayout>
 </LinearLayout>

@@ -1,159 +1,53 @@
 package com.obenproto.oben.activities;
 
-import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
-import android.widget.ProgressBar;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.obenproto.oben.R;
-import com.obenproto.oben.api.ObenAPIClient;
-import com.obenproto.oben.api.ObenAPIService;
-import com.obenproto.oben.api.response.ObenApiResponse;
+import com.obenproto.oben.activities.base.BaseActivity;
+import com.obenproto.oben.api.domain.ObenUser;
 
-import java.net.HttpURLConnection;
+public class OptionActivity extends BaseActivity implements View.OnClickListener {
 
-import retrofit.Call;
-import retrofit.Callback;
-import retrofit.Response;
-import retrofit.Retrofit;
-
-public class OptionActivity extends Activity {
-
-    TextView regularLbl, commercialLbl, freestyleLbl;
-    TextView cancelLbl, logoutLbl;
-    SharedPreferences pref;
-    SharedPreferences.Editor editor;
-    ProgressBar progressBar;
-
-    @SuppressLint("CommitPrefEdits")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.option_activity);
 
-        pref = PreferenceManager.getDefaultSharedPreferences(this);
-        editor = pref.edit();
-
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        progressBar.setVisibility(View.GONE);
-
-        regularLbl = (TextView) findViewById(R.id.regularLbl);
-        regularLbl.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(OptionActivity.this, RegularActivity.class));
-            }
-        });
-
-        commercialLbl = (TextView) findViewById(R.id.commercialLbl);
-        commercialLbl.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(OptionActivity.this, CommercialActivity.class));
-            }
-        });
-
-        freestyleLbl = (TextView) findViewById(R.id.freestyleLbl);
-        freestyleLbl.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(OptionActivity.this, FreestyleActivity.class));
-            }
-        });
-
-        cancelLbl = (TextView) findViewById(R.id.cancelBtn);
-        cancelLbl.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                editor.putString("InitialLogin", "yes");
-                editor.apply();
-
-                startActivity(new Intent(OptionActivity.this, ProfileActivity.class));
-                finish();
-            }
-        });
-
-        logoutLbl = (TextView) findViewById(R.id.logoutBtn);
-        logoutLbl.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onUserLogout();
-                logoutLbl.setEnabled(false);
-                progressBar.setVisibility(View.VISIBLE);
-            }
-        });
+        // Map event handlers.
+        findViewById(R.id.regularLbl).setOnClickListener(this);
+        findViewById(R.id.commercialLbl).setOnClickListener(this);
+        findViewById(R.id.freestyleLbl).setOnClickListener(this);
+        findViewById(R.id.cancelBtn).setOnClickListener(this);
+        findViewById(R.id.logoutBtn).setOnClickListener(this);
     }
-
 
     @Override
-    public void onBackPressed() {
-        editor.putString("InitialLogin", "yes");
-        editor.apply();
-
-        startActivity(new Intent(OptionActivity.this, ProfileActivity.class));
-        finish();
+    public void onClick(View v) {
+        if (v.getId() == R.id.regularLbl) {
+            startActivity(new Intent(OptionActivity.this, RegularActivity.class));
+        } else if (v.getId() == R.id.commercialLbl) {
+            startActivity(new Intent(OptionActivity.this, CommercialActivity.class));
+        } else if (v.getId() == R.id.freestyleLbl) {
+            startActivity(new Intent(OptionActivity.this, FreestyleActivity.class));
+        } else if (v.getId() == R.id.cancelBtn) {
+            finish();
+        } else if (v.getId() == R.id.logoutBtn) {
+            requestLogout();
+        }
     }
 
-    // Recall of user logout
-    public void onUserLogout() {
-        // Email login.
-        ObenAPIService client = ObenAPIClient.newInstance(ObenAPIService.class);
-        Call<ObenApiResponse> call = client.userLogout();
+    private void requestLogout() {
+        ObenUser.removeSavedUser();
+        showLoginPage();
+    }
 
-        call.enqueue(new Callback<ObenApiResponse>() {
-            @Override
-            public void onResponse(Response<ObenApiResponse> response, Retrofit retrofit) {
-                progressBar.setVisibility(View.GONE);
-                if (response.code() == HttpURLConnection.HTTP_OK) { // success
-                    ObenApiResponse response_result = response.body();
-                    String message = response_result.User.message;
-                    Log.d("Logout Sucess:", message);
-
-                    // Save the avatar ID to shared preference.
-                    editor.putString("userEmail", "");
-                    editor.putInt("userID", 0);
-                    editor.putInt("avatarID", 0);
-                    editor.putInt("RegularAvatarID", 0);
-                    editor.putInt("CommercialAvatarID", 0);
-                    editor.putInt("FreestyleAvatarID", 0);
-                    editor.commit();
-
-                    // Go to the Login page.
-                    startActivity(new Intent(OptionActivity.this, LoginActivity.class));
-                    finish();
-
-                } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
-                    Log.d("Status", "Http Unauthorized");
-                    logoutLbl.setEnabled(true);
-
-                    Toast.makeText(getApplicationContext(), R.string.unauthorized_toast, Toast.LENGTH_LONG).show();
-                    editor.putString("InitialLogin", "no");
-                    editor.apply();
-
-                    startActivity(new Intent(OptionActivity.this, ProfileActivity.class));
-                    finish();
-
-                } else {
-                    Log.d("Status", "Server Connection Failure");
-                    logoutLbl.setEnabled(true);
-                }
-            }
-
-            @Override
-            public void onFailure(Throwable t) {
-                Log.d("Failure", t.getMessage());
-                progressBar.setVisibility(View.GONE);
-                logoutLbl.setEnabled(true);
-            }
-        });
+    private void showLoginPage() {
+        Intent intent = new Intent(OptionActivity.this, LoginActivity.class);
+        startActivity(intent);
+        finish();
     }
 }

@@ -82,7 +82,6 @@ public class ProfileActivity extends BaseActivity implements View.OnClickListene
         if (v.getId() == R.id.setUpAvatarLbl) {
             Intent intent = new Intent(ProfileActivity.this, OptionActivity.class);
             startActivity(intent);
-            finish();
         } else if (v.getId() == R.id.logoutLbl) {
             requestLogout();
         }
