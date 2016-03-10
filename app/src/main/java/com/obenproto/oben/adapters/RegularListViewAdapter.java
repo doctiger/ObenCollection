@@ -415,7 +415,7 @@ public class RegularListViewAdapter extends BaseAdapter implements ActivityCompa
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("d-Status", "Http Unauthorized");
-                    Toast.makeText(cont_, R.string.unauthorized_toast_msg, Toast.LENGTH_LONG).show();
+                    Toast.makeText(cont_, R.string.unauthorized_toast, Toast.LENGTH_LONG).show();
                     editor.putString("InitialLogin", "no");
                     editor.apply();
 

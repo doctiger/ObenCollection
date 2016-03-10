@@ -41,9 +41,6 @@ import retrofit.Callback;
 import retrofit.Response;
 import retrofit.Retrofit;
 
-/**
- * Created by Petro RingTon on 12/9/2015.
- */
 public class CommercialListViewAdapter extends BaseAdapter {
 
     public ArrayList<HashMap<String, String>> list;
@@ -234,9 +231,7 @@ public class CommercialListViewAdapter extends BaseAdapter {
                     }
 
                 } else {
-                    int btnIndex = position;
-
-                    stopRecording(list.size() - btnIndex);
+                    stopRecording(list.size() - position);
                 }
 
             }
@@ -284,7 +279,7 @@ public class CommercialListViewAdapter extends BaseAdapter {
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("d-Status", "Http Unauthorized");
-                    Toast.makeText(cont_, R.string.unauthorized_toast_msg, Toast.LENGTH_LONG).show();
+                    Toast.makeText(cont_, R.string.unauthorized_toast, Toast.LENGTH_LONG).show();
                     editor.putString("InitialLogin", "no");
                     editor.apply();
 

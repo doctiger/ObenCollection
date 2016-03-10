@@ -64,7 +64,7 @@ public class CommercialActivity extends Activity {
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         progressBar.setVisibility(View.VISIBLE);
 
-        listView = (ListView)findViewById(R.id.listView);
+        listView = (ListView) findViewById(R.id.listView);
         list = new ArrayList<>();
 
         // Get the list contents.
@@ -124,7 +124,7 @@ public class CommercialActivity extends Activity {
         }
 
         for (int i = 1; i <= index; i++) {
-            temp.put(String.valueOf(i), phraseList.get((index-i)%COMMERCIAL_PHRASES_COUNT).Phrase.getSentence());
+            temp.put(String.valueOf(i), phraseList.get((index - i) % COMMERCIAL_PHRASES_COUNT).Phrase.getSentence());
             list.add(temp);
         }
 
@@ -214,7 +214,7 @@ public class CommercialActivity extends Activity {
                         list = new ArrayList<>();
 
                         Log.d("Record count : ", String.valueOf(recordcount));
-                        if (recordcount > LIMIT_NUM)  recordcount = LIMIT_NUM;
+                        if (recordcount > LIMIT_NUM) recordcount = LIMIT_NUM;
 
                         populateList(recordcount);
 
@@ -227,7 +227,7 @@ public class CommercialActivity extends Activity {
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("Status", "Http Unauthorized");
-                    Toast.makeText(getApplicationContext(), R.string.unauthorized_toast_msg, Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), R.string.unauthorized_toast, Toast.LENGTH_LONG).show();
                     editor.putString("InitialLogin", "no");
                     editor.apply();
 
@@ -268,7 +268,7 @@ public class CommercialActivity extends Activity {
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("Status", "Http Unauthorized");
-                    Toast.makeText(getApplicationContext(), R.string.unauthorized_toast_msg, Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), R.string.unauthorized_toast, Toast.LENGTH_LONG).show();
                     editor.putString("InitialLogin", "no");
                     editor.apply();
 

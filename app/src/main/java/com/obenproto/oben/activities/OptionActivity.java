@@ -46,7 +46,7 @@ public class OptionActivity extends Activity {
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         progressBar.setVisibility(View.GONE);
 
-        regularLbl = (TextView)findViewById(R.id.regularLbl);
+        regularLbl = (TextView) findViewById(R.id.regularLbl);
         regularLbl.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -54,7 +54,7 @@ public class OptionActivity extends Activity {
             }
         });
 
-        commercialLbl = (TextView)findViewById(R.id.commercialLbl);
+        commercialLbl = (TextView) findViewById(R.id.commercialLbl);
         commercialLbl.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -62,7 +62,7 @@ public class OptionActivity extends Activity {
             }
         });
 
-        freestyleLbl = (TextView)findViewById(R.id.freestyleLbl);
+        freestyleLbl = (TextView) findViewById(R.id.freestyleLbl);
         freestyleLbl.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -135,7 +135,7 @@ public class OptionActivity extends Activity {
                     Log.d("Status", "Http Unauthorized");
                     logoutLbl.setEnabled(true);
 
-                    Toast.makeText(getApplicationContext(), R.string.unauthorized_toast_msg, Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), R.string.unauthorized_toast, Toast.LENGTH_LONG).show();
                     editor.putString("InitialLogin", "no");
                     editor.apply();
 

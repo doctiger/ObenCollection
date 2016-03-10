@@ -1,17 +1,13 @@
 package com.obenproto.oben.activities;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.EditText;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -50,8 +46,6 @@ public class LoginActivity extends BaseActivity {
 
         // Get the shareedpreference.
         if (!pref.getString("userEmail", "").equals("")) {
-            Log.d("Already registered", "*****");
-
             editor.putString("InitialLogin", "no");
             editor.apply();
 
@@ -121,7 +115,7 @@ public class LoginActivity extends BaseActivity {
 
                     }
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
-                    Toast.makeText(getApplicationContext(), getString(R.string.unauthorized_toast),
+                    Toast.makeText(getApplicationContext(), R.string.unauthorized_toast,
                             Toast.LENGTH_LONG).show();
                 } else {
                     userLogin = "Connection Failure";

@@ -238,7 +238,7 @@ public class FreestyleActivity extends Activity {
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("Status", "Http Unauthorized");
-                    Toast.makeText(getApplicationContext(), R.string.unauthorized_toast_msg, Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), R.string.unauthorized_toast, Toast.LENGTH_LONG).show();
                     editor.putString("InitialLogin", "no");
                     editor.apply();
 
@@ -321,7 +321,7 @@ public class FreestyleActivity extends Activity {
                         String str = recordMap.get("recordCount").toString();
                         int recordcount = Float.valueOf(str).intValue();
 
-                        Log.d("record count" , String.valueOf(recordcount));
+                        Log.d("record count", String.valueOf(recordcount));
                         editor.putInt("RecordCount", recordcount);
                         editor.commit();
 
@@ -333,7 +333,7 @@ public class FreestyleActivity extends Activity {
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("Status", "Http Unauthorized");
-                    Toast.makeText(getApplicationContext(), R.string.unauthorized_toast_msg, Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), R.string.unauthorized_toast, Toast.LENGTH_LONG).show();
                     editor.putString("InitialLogin", "no");
                     editor.apply();
 
