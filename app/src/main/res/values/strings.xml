@@ -30,4 +30,5 @@
     <string name="Email">Email</string>
     <string name="Password">Password</string>
     <string name="Login">Login</string>
+    <string name="exit_message_str">All of your recordings have been saved. You may return and continue recording where you left off at any time.</string>
 </resources>

@@ -33,10 +33,6 @@ public class ProfileActivity extends Activity {
     TextView setupAvatar, logoutTxt;
     public static Activity activity = null;
 
-    String UNAUTHORIZED_TOAST = "We have experienced a Network Error. " +
-            "We have successfully saved all your work and you can now resume" +
-            " where you left off. We apologize for any inconvenience.";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -168,7 +164,7 @@ public class ProfileActivity extends Activity {
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("Status", "Http Unauthorized");
                     logoutTxt.setEnabled(true);
-                    Toast.makeText(getApplicationContext(), UNAUTHORIZED_TOAST, Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), R.string.unauthorized_toast_msg, Toast.LENGTH_LONG).show();
 
                 } else {
                     Log.d("Status", "Server Connection Failure");
@@ -217,7 +213,7 @@ public class ProfileActivity extends Activity {
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("User login Status", "Http Unauthorized");
-                    Toast.makeText(getApplicationContext(), UNAUTHORIZED_TOAST, Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), R.string.unauthorized_toast_msg, Toast.LENGTH_LONG).show();
                     editor.putString("InitialLogin", "no");
                     editor.apply();
 

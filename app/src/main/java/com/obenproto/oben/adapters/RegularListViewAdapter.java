@@ -64,8 +64,6 @@ public class RegularListViewAdapter extends BaseAdapter implements ActivityCompa
     public static MediaPlayer mediaPlayer;
 
     public static final String TAG = "RegularListViewAdapter";
-    public static final String UNAUTHORIZED_TOAST = "We have experienced a Network Error. " +
-            "We have successfully saved all your work and you can now resume where you left off. We apologize for any inconvenience.";
 
     /**
      * Id to identify a microphone permission request.
@@ -417,7 +415,7 @@ public class RegularListViewAdapter extends BaseAdapter implements ActivityCompa
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("d-Status", "Http Unauthorized");
-                    Toast.makeText(cont_, UNAUTHORIZED_TOAST, Toast.LENGTH_LONG).show();
+                    Toast.makeText(cont_, R.string.unauthorized_toast_msg, Toast.LENGTH_LONG).show();
                     editor.putString("InitialLogin", "no");
                     editor.apply();
 

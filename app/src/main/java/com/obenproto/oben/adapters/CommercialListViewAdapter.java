@@ -60,8 +60,6 @@ public class CommercialListViewAdapter extends BaseAdapter {
     int record_index = 0;
     ExtAudioRecorder extAudioRecorder;
     public static MediaPlayer mediaPlayerListen;
-    public static final String UNAUTHORIZED_TOAST = "We have experienced a Network Error. " +
-            "We have successfully saved all your work and you can now resume where you left off. We apologize for any inconvenience.";
 
     public CommercialListViewAdapter(Context context, ArrayList<HashMap<String, String>> list) {
         super();
@@ -286,7 +284,7 @@ public class CommercialListViewAdapter extends BaseAdapter {
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("d-Status", "Http Unauthorized");
-                    Toast.makeText(cont_, UNAUTHORIZED_TOAST, Toast.LENGTH_LONG).show();
+                    Toast.makeText(cont_, R.string.unauthorized_toast_msg, Toast.LENGTH_LONG).show();
                     editor.putString("InitialLogin", "no");
                     editor.apply();
 

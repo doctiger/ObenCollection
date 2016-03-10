@@ -50,8 +50,6 @@ public class FreestyleActivity extends Activity {
     int userId = 0;
     private static String filePath;
     ExtAudioRecorder extAudioRecorder;
-    public static final String UNAUTHORIZED_TOAST = "We have experienced a Network Error. " +
-            "We have successfully saved all your work and you can now resume where you left off. We apologize for any inconvenience.";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -151,7 +149,7 @@ public class FreestyleActivity extends Activity {
     public void showAlert() {
         AlertDialog.Builder builder = new AlertDialog.Builder(FreestyleActivity.this);
         builder.setTitle("Save & Exit");
-        builder.setMessage("All of your recordings have been saved. You may return and continue recording where you left off at any time.");
+        builder.setMessage(R.string.exit_message_str);
         builder.setCancelable(true);
         builder.setPositiveButton("Save & Exit",
                 new DialogInterface.OnClickListener() {
@@ -240,7 +238,7 @@ public class FreestyleActivity extends Activity {
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("Status", "Http Unauthorized");
-                    Toast.makeText(getApplicationContext(), UNAUTHORIZED_TOAST, Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), R.string.unauthorized_toast_msg, Toast.LENGTH_LONG).show();
                     editor.putString("InitialLogin", "no");
                     editor.apply();
 
@@ -335,7 +333,7 @@ public class FreestyleActivity extends Activity {
 
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.d("Status", "Http Unauthorized");
-                    Toast.makeText(getApplicationContext(), UNAUTHORIZED_TOAST, Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), R.string.unauthorized_toast_msg, Toast.LENGTH_LONG).show();
                     editor.putString("InitialLogin", "no");
                     editor.apply();
 
