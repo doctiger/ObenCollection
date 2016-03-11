@@ -2,7 +2,7 @@ package com.obenproto.oben;
 
 import android.app.Application;
 
-import com.obenproto.oben.api.ObenAPIClient;
+import com.obenproto.oben.api.APIClient;
 import com.obenproto.oben.utils.CommonUtils;
 import com.obenproto.oben.utils.LocalStorage;
 
@@ -16,7 +16,7 @@ public class ObenApplication extends Application {
     }
 
     private void initSingletons() {
-        ObenAPIClient.init();
+        APIClient.init();
         LocalStorage.init(this);
         CommonUtils.init(this);
     }

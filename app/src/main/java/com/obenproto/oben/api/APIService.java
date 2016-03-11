@@ -19,7 +19,7 @@ import retrofit.http.POST;
 import retrofit.http.Part;
 import retrofit.http.Path;
 
-public interface ObenAPIService {
+public interface APIService {
 
     ////  Recall of user login
     @FormUrlEncoded

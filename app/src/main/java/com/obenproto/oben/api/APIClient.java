@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 import retrofit.GsonConverterFactory;
 import retrofit.Retrofit;
 
-public class ObenAPIClient {
+public class APIClient {
 
     public static final String BASE_URL = "https://oben.us/";
 
@@ -58,7 +58,7 @@ public class ObenAPIClient {
         return retrofit.create(serviceClass);
     }
 
-    public static ObenAPIService getAPIService() {
-        return newInstance(ObenAPIService.class);
+    public static APIService getAPIService() {
+        return newInstance(APIService.class);
     }
 }

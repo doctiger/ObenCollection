@@ -9,8 +9,8 @@ import android.widget.EditText;
 
 import com.obenproto.oben.R;
 import com.obenproto.oben.activities.base.BaseActivity;
-import com.obenproto.oben.api.ObenAPIClient;
-import com.obenproto.oben.api.ObenAPIService;
+import com.obenproto.oben.api.APIClient;
+import com.obenproto.oben.api.APIService;
 import com.obenproto.oben.api.domain.ObenUser;
 import com.obenproto.oben.api.response.LoginResponse;
 
@@ -73,7 +73,7 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
 
     private void requestLogin(final String email, String password) {
         showProgress();
-        ObenAPIService client = ObenAPIClient.newInstance(ObenAPIService.class);
+        APIService client = APIClient.newInstance(APIService.class);
         Call<LoginResponse> call = client.userLogin(email, password, "Oben User");
         call.enqueue(new Callback<LoginResponse>() {
             @Override

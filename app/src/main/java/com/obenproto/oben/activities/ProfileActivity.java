@@ -9,7 +9,7 @@ import android.widget.TextView;
 
 import com.obenproto.oben.R;
 import com.obenproto.oben.activities.base.BaseActivity;
-import com.obenproto.oben.api.ObenAPIClient;
+import com.obenproto.oben.api.APIClient;
 import com.obenproto.oben.api.domain.AvatarInfo;
 import com.obenproto.oben.api.domain.ObenUser;
 import com.obenproto.oben.api.response.GetAllUserAvatarsResponse;
@@ -58,7 +58,7 @@ public class ProfileActivity extends BaseActivity implements View.OnClickListene
         ObenUser user = ObenUser.getSavedUser();
         if (user != null) {
             progressView.setVisibility(View.VISIBLE);
-            Call<GetAllUserAvatarsResponse> call = ObenAPIClient.getAPIService().getAllUserAvatars(user.userId);
+            Call<GetAllUserAvatarsResponse> call = APIClient.getAPIService().getAllUserAvatars(user.userId);
             call.enqueue(new Callback<GetAllUserAvatarsResponse>() {
                 @Override
                 public void onResponse(Response<GetAllUserAvatarsResponse> response, Retrofit retrofit) {
