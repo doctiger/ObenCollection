@@ -1,153 +1,85 @@
 package com.obenproto.oben.activities;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Environment;
-import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.View;
-import android.widget.ImageButton;
-import android.widget.ProgressBar;
+import android.view.Window;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.obenproto.oben.R;
-import com.obenproto.oben.ServerSocket.SimpleClient;
-import com.obenproto.oben.ServerSocket.SimpleServer;
+import com.obenproto.oben.activities.base.BaseActivity;
 import com.obenproto.oben.api.APIClient;
-import com.obenproto.oben.api.APIService;
+import com.obenproto.oben.api.domain.ObenUser;
+import com.obenproto.oben.api.domain.ObenUserAvatar;
+import com.obenproto.oben.api.response.SaveUserAvatarResponse;
 import com.obenproto.oben.recorder.ExtAudioRecorder;
-import com.obenproto.oben.api.response.ObenApiResponse;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.RequestBody;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.util.List;
-import java.util.Map;
 
 import retrofit.Call;
 import retrofit.Callback;
 import retrofit.Response;
 import retrofit.Retrofit;
 
-public class FreestyleActivity extends Activity {
+public class FreestyleActivity extends BaseActivity implements View.OnClickListener {
 
-    RelativeLayout start;
-    RelativeLayout stop;
-    ImageButton start_rec;
-    ProgressBar progressBar;
-    SharedPreferences pref;
-    SharedPreferences.Editor editor;
-    Map recordMap;
-    Map avatarMap;
-    int userId = 0;
-    private static String filePath;
-    ExtAudioRecorder extAudioRecorder;
+    RelativeLayout progressView;
+    ImageView btnRecord;
+    TextView tvRecordNote;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_freestyle);
 
-        start = (RelativeLayout) findViewById(R.id.start_recording_layout);
-        stop = (RelativeLayout) findViewById(R.id.stop_recording_layout);
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        progressBar.setVisibility(View.GONE);
-        stop.setVisibility(View.GONE);
+        // Map view elements to class members.
+        progressView = (RelativeLayout) findViewById(R.id.layout_progress_view);
+        btnRecord = (ImageView) findViewById(R.id.btn_record);
+        tvRecordNote = (TextView) findViewById(R.id.tv_record_note);
 
-        filePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/ObenFreestyleRecord.wav";
-
-        pref = PreferenceManager.getDefaultSharedPreferences(this);
-        editor = pref.edit();
-
-        userId = pref.getInt("userID", 0);
-        Log.d("userID", String.valueOf(pref.getInt("userID", 0)));
-
-        start_rec = (ImageButton) findViewById(R.id.btnStart);
-        start_rec.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    startRecording(v);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-//        start_rec.setOnTouchListener(new View.OnTouchListener() {
-//            @Override
-//            public boolean onTouch(View v, MotionEvent event) {
-//                switch (event.getAction()) {
-//                    case MotionEvent.ACTION_DOWN:
-//                        // pressed
-//                        try {
-//                            startRecording(v);
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
-//                        return true;
-//                    case MotionEvent.ACTION_UP:
-//                        // released
-//                        stopRecording(v);
-//                        return true;
-//                }
-//                return false;
-//            }
-//        });
-
-        ImageButton stop_rec = (ImageButton) findViewById(R.id.btnStop);
-        stop_rec.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                stopRecording(v);
-            }
-        });
-
-        TextView cancelTxt = (TextView) findViewById(R.id.cancelBtn);
-        cancelTxt.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showAlert();
-            }
-        });
-
-        // Get the freestyle avatar ID.
-        Log.d("FreestyleAvatarID", String.valueOf(pref.getInt("FreestyleAvatarID", 0)));
-        Log.d("RecordCount", String.valueOf(pref.getInt("RecordCount", 0)));
-        if (pref.getInt("FreestyleAvatarID", 0) == 0) {
-            onFreestyleAvatarID(userId);
-            progressBar.setVisibility(View.VISIBLE);
-            start_rec.setEnabled(false);
-
-        } else {
-            if (pref.getInt("RecordCount", 0) == 0) {
-                progressBar.setVisibility(View.VISIBLE);
-                start_rec.setEnabled(false);
-                onAvatarData(pref.getInt("FreestyleAvatarID", 0));
-            }
-        }
-
-        ////////////////////////////////////
-        new Thread(new SimpleServer()).start();
-        new Thread(new SimpleClient()).start();
-
+        // Map event handlers.
+        findViewById(R.id.cancelBtn).setOnClickListener(this);
+        btnRecord.setOnClickListener(this);
     }
 
     @Override
-    public void onBackPressed() {
-        showAlert();
+    protected void showProgress() {
+        progressView.setVisibility(View.VISIBLE);
     }
 
-    public void showAlert() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(FreestyleActivity.this);
+    @Override
+    protected void dismissProgress() {
+        progressView.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.cancelBtn) {
+            showAlert();
+        } else if (v.getId() == btnRecord.getId()) {
+            if (isRecording) {
+                isRecording = false;
+                finishRecording();
+            } else {
+                isRecording = true;
+                startRecording();
+            }
+        }
+    }
+
+    private void showAlert() {
+        stopRecording();
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Save & Exit");
         builder.setMessage(R.string.exit_message_str);
         builder.setCancelable(true);
@@ -170,185 +102,78 @@ public class FreestyleActivity extends Activity {
         alertDialog.show();
     }
 
-    public void startRecording(View view) throws IOException {
-        start.setVisibility(View.GONE);
-        stop.setVisibility(View.VISIBLE);
-        Log.d("Recorder", "Start recording");
+    boolean isRecording = false;
+    final String PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "/oben_audio.wav";
+    ExtAudioRecorder extAudioRecorder;
 
+    private void startRecording() {
+        btnRecord.setImageResource(R.drawable.background_image_mic_red);
+        tvRecordNote.setText(R.string.stopRecording);
+
+        // Uncompressed recording (WAV) : IF true - AMR
         extAudioRecorder = ExtAudioRecorder.getInstanse(false);
-
-        extAudioRecorder.setOutputFile(filePath);
+        extAudioRecorder.setOutputFile(PATH);
         extAudioRecorder.prepare();
         extAudioRecorder.start();
     }
 
-    public void stopRecording(View view) {
-        start.setVisibility(View.VISIBLE);
-        stop.setVisibility(View.GONE);
-        progressBar.setVisibility(View.VISIBLE);
-        start_rec.setEnabled(false);
-        Log.d("Recorder", "Stop recording");
-
-        extAudioRecorder.stop();
-        extAudioRecorder.release();
-
-        String str = "/storage/emulated/0/iPhoneRecVoice1.wav";
-        Log.d("audio file path : ", filePath);
-        File audioFileName = new File(filePath);
-        RequestBody requestBody = RequestBody.create(MediaType.parse("audio/wav"), audioFileName);
-
-        // Upload the recorded audio file.
-        userId = pref.getInt("userID", 0);
-        int avatarId = pref.getInt("FreestyleAvatarID", 0);
-        int recordId = pref.getInt("RecordCount", 0) + 1;
-
-        // Upload the voice.
-        onSaveUserAvatarRequest(userId, recordId, requestBody, avatarId);
-
-        editor.putInt("RecordCount", recordId);
-        editor.commit();
-    }
-
-    // Recall of save user avatar
-    public void onSaveUserAvatarRequest(int userId, final int recordId, RequestBody audioFile, final int avatarId) {
-        // save user avatar
-        APIService client = APIClient.newInstance(APIService.class);
-
-        Call<ObenApiResponse> call;
-        if (avatarId == 0) {
-            call = client.saveOriginalFreestyleUserAvatar(userId, recordId, audioFile);
-        } else {
-            call = client.saveFreestyleUserAvatar(userId, recordId, audioFile, avatarId);
+    private void stopRecording() {
+        if (extAudioRecorder != null) {
+            extAudioRecorder.stop();
+            extAudioRecorder.release();
         }
-
-        call.enqueue(new Callback<ObenApiResponse>() {
-            @Override
-            public void onResponse(Response<ObenApiResponse> response, Retrofit retrofit) {
-//                progressBar.setVisibility(View.GONE);
-//                start_rec.setEnabled(true);
-//                if (response.code() == HttpURLConnection.HTTP_OK) { // success
-//                    Log.v("Upload", "Success");
-//                    Log.d("record ID - " + String.valueOf(recordId), "avatar ID - " + String.valueOf(avatarId));
-//
-//                    int regularAvatarID = response.body().UserAvatar.getAvatarId();
-//                    editor.putInt("FreestyleAvatarID", regularAvatarID);
-//                    editor.commit();
-//
-//                    Toast.makeText(getApplicationContext(), "Upload Success", Toast.LENGTH_LONG).show();
-//
-//                } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
-//                    Log.d("Status", "Http Unauthorized");
-//                    Toast.makeText(getApplicationContext(), R.string.unauthorized_toast, Toast.LENGTH_LONG).show();
-//                    editor.putString("InitialLogin", "no");
-//                    editor.apply();
-//
-//                    startActivity(new Intent(FreestyleActivity.this, ProfileActivity.class));
-//                    finish();
-//
-//                } else {
-//                    Log.d("Status", "Connection Failure");
-//                }
-            }
-
-            @Override
-            public void onFailure(Throwable t) {
-                progressBar.setVisibility(View.GONE);
-                start_rec.setEnabled(true);
-                Log.d("Upload", t.getMessage());
-            }
-        });
     }
 
-    // Get avatarID for regular
-    public void onFreestyleAvatarID(int userId) {
-        APIService client = APIClient.newInstance(APIService.class);
-        Call<List<ObenApiResponse>> call = client.getFreestyleAvatars(userId);
+    private void finishRecording() {
+        stopRecording();
 
-        call.enqueue(new Callback<List<ObenApiResponse>>() {
-            @Override
-            public void onResponse(Response<List<ObenApiResponse>> response, Retrofit retrofit) {
-                if (response.code() == HttpURLConnection.HTTP_OK) {
-                    progressBar.setVisibility(View.GONE);
-                    start_rec.setEnabled(true);
+        btnRecord.setImageResource(R.drawable.background_image_mic_blue);
+        tvRecordNote.setText(R.string.startRecording);
 
-                    if (response.body().size() == 0) {
-                        editor.putInt("FreestyleAvatarID", 0);
-
-                    } else {
-                        ObenApiResponse response_result = response.body().get(0);
-                        avatarMap = (Map) response_result.Avatar;
-
-                        if (avatarMap != null) {
-                            editor.putInt("FreestyleAvatarID", Float.valueOf(avatarMap.get("avatarId").toString()).intValue());
-
-                        } else {
-                            editor.putInt("FreestyleAvatarID", 0);
-                        }
-                    }
-
-                    editor.commit();
-                    Log.d("freestyle avatarID", String.valueOf(pref.getInt("FreestyleAvatarID", 0)));
-
-                } else {
-                    Log.d("Status", "Http Unauthorized");
-                }
-            }
-
-            @Override
-            public void onFailure(Throwable t) {
-                Log.d("Failure", t.getMessage());
-            }
-        });
+        // Upload user recording.
+        File audioFileName = new File(PATH);
+        RequestBody requestBody = RequestBody.create(MediaType.parse("audio/wav"), audioFileName);
+        saveAvatar(requestBody);
     }
 
-    // Get all avatar data for freestyle
-    public void onAvatarData(int avatarID) {
-        APIService client = APIClient.newInstance(APIService.class);
-        Call<ObenApiResponse> call = client.getAvatarData(avatarID);
-
-        call.enqueue(new Callback<ObenApiResponse>() {
-
-            @Override
-            public void onResponse(Response<ObenApiResponse> response, Retrofit retrofit) {
-                if (response.code() == HttpURLConnection.HTTP_OK) { // success
-                    progressBar.setVisibility(View.GONE);
-                    start_rec.setEnabled(true);
-
-                    ObenApiResponse response_result = response.body();
-                    recordMap = (Map) response_result.Avatar;
-
-                    if (recordMap.get("status") == null) {
-                        String str = recordMap.get("recordCount").toString();
-                        int recordcount = Float.valueOf(str).intValue();
-
-                        Log.d("record count", String.valueOf(recordcount));
-                        editor.putInt("RecordCount", recordcount);
-                        editor.commit();
-
+    private void saveAvatar(RequestBody requestBody) {
+        ObenUser user = ObenUser.getSavedUser();
+        if (user != null) {
+            showProgress();
+            Call<SaveUserAvatarResponse> call = APIClient.getAPIService().saveUserAvatar(
+                    FREESTYLE_MODE, user.userId, 1, requestBody, null);
+            call.enqueue(new Callback<SaveUserAvatarResponse>() {
+                @Override
+                public void onResponse(Response<SaveUserAvatarResponse> response, Retrofit retrofit) {
+                    dismissProgress();
+                    if (response.code() == HttpURLConnection.HTTP_OK) {
+                        ObenUserAvatar savedAvatar = response.body().UserAvatar;
+                        helperUtils.showMessage(savedAvatar.message);
+                    } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                        helperUtils.showMessage(R.string.unauthorized_toast);
+                        requestLogout();
                     } else {
-                        editor.putInt("RecordCount", 0);
-                        editor.commit();
-                        Log.d("Status", "Avatar with id 4 not found");
+                        helperUtils.showMessage("Network error");
                     }
-
-                } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
-                    Log.d("Status", "Http Unauthorized");
-                    Toast.makeText(getApplicationContext(), R.string.unauthorized_toast, Toast.LENGTH_LONG).show();
-                    editor.putString("InitialLogin", "no");
-                    editor.apply();
-
-                    startActivity(new Intent(FreestyleActivity.this, ProfileActivity.class));
-                    finish();
-
-                } else {
-                    Log.d("Status", "Server Connection Failure");
                 }
-            }
 
-            @Override
-            public void onFailure(Throwable t) {
-                Log.d("failure", t.getMessage());
-            }
-        });
+                @Override
+                public void onFailure(Throwable t) {
+                    dismissProgress();
+                    helperUtils.showMessage(t.getLocalizedMessage());
+                }
+            });
+        }
+    }
+
+    private void requestLogout() {
+        showLoginPage();
+    }
+
+    private void showLoginPage() {
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 }

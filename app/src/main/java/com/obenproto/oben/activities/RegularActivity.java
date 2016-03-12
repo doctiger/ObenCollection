@@ -192,7 +192,7 @@ public class RegularActivity extends BaseActivity implements View.OnClickListene
     }
 
     private void showLoginPage() {
-        Intent intent = new Intent(RegularActivity.this, LoginActivity.class);
+        Intent intent = new Intent(this, LoginActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
@@ -211,7 +211,7 @@ public class RegularActivity extends BaseActivity implements View.OnClickListene
         stopPlaying();
         stopRecording(null);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(RegularActivity.this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Save & Exit");
         builder.setMessage(R.string.exit_message_str);
         builder.setCancelable(true);
