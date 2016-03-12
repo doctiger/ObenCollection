@@ -24,6 +24,7 @@ import com.obenproto.oben.api.APIClient;
 import com.obenproto.oben.api.domain.ObenPhrase;
 import com.obenproto.oben.api.domain.ObenUser;
 import com.obenproto.oben.api.domain.ObenUserAvatar;
+import com.obenproto.oben.api.response.GetAllUserAvatarsResponse;
 import com.obenproto.oben.api.response.GetAvatarResponse;
 import com.obenproto.oben.api.response.GetPhrasesResponse;
 import com.obenproto.oben.api.response.SaveUserAvatarResponse;
@@ -42,7 +43,6 @@ import retrofit.Retrofit;
 public class RegularActivity extends BaseActivity implements View.OnClickListener {
 
     private static final int LIMIT_COUNT = 36;
-    private static final int REGULAR_MODE = 1;
 
     RelativeLayout progressView;
     ListView listView;
@@ -117,7 +117,44 @@ public class RegularActivity extends BaseActivity implements View.OnClickListene
                 populateListView();
             }
         } else {
-            finish();
+            getAllUserAvatars();
+        }
+    }
+
+    private void getAllUserAvatars() {
+        ObenUser user = ObenUser.getSavedUser();
+        if (user != null) {
+            Call<GetAllUserAvatarsResponse> call = APIClient.getAPIService().getAllUserAvatars(user.userId);
+            call.enqueue(new Callback<GetAllUserAvatarsResponse>() {
+                @Override
+                public void onResponse(Response<GetAllUserAvatarsResponse> response, Retrofit retrofit) {
+                    dismissProgress();
+                    if (response.code() == HttpURLConnection.HTTP_OK) {
+                        GetAllUserAvatarsResponse result = response.body();
+                        if (result != null) {
+                            helperUtils.avatarLoaded = true;
+                            helperUtils.regular = result.getAvatar(REGULAR_MODE);
+                            helperUtils.commercial = result.getAvatar(COMMERCIAL_MODE);
+                            helperUtils.freestyle = result.getAvatar(FREESTYLE_MODE);
+
+                            getAvatar();
+                        }
+                    } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                        helperUtils.showMessage(R.string.unauthorized_toast);
+                        requestLogout();
+                    } else {
+                        helperUtils.showMessage("Network error");
+                        finish();
+                    }
+                }
+
+                @Override
+                public void onFailure(Throwable t) {
+                    dismissProgress();
+                    helperUtils.showMessage(t.getLocalizedMessage());
+                    finish();
+                }
+            });
         }
     }
 
@@ -171,6 +208,9 @@ public class RegularActivity extends BaseActivity implements View.OnClickListene
     }
 
     private void showAlert() {
+        stopPlaying();
+        stopRecording(null);
+
         AlertDialog.Builder builder = new AlertDialog.Builder(RegularActivity.this);
         builder.setTitle("Save & Exit");
         builder.setMessage(R.string.exit_message_str);
@@ -231,7 +271,7 @@ public class RegularActivity extends BaseActivity implements View.OnClickListene
 
             TextView tvSentence = (TextView) convertView.findViewById(R.id.descriptionTxt);
             Button btnHearSample = (Button) convertView.findViewById(R.id.hearSampleBtn);
-            Button btnListen = (Button) convertView.findViewById(R.id.listenBtn);
+            final Button btnListen = (Button) convertView.findViewById(R.id.listenBtn);
             final Button btnRec = (Button) convertView.findViewById(R.id.recBtn);
 
             final Integer recordId = getItem(position);
@@ -271,13 +311,17 @@ public class RegularActivity extends BaseActivity implements View.OnClickListene
                 public void onClick(View v) {
                     if (hasGrantedAppPermissions()) {
                         stopPlaying();
-                        isRecording = !isRecording;
+                        String stop = getString(R.string.STOP);
                         if (isRecording) {
+                            if (btnRec.getText().toString().equalsIgnoreCase(stop)) {
+                                isRecording = false;
+                                stopRecording(recordId);
+                                btnRec.setText(R.string.REC);
+                            }
+                        } else {
+                            isRecording = true;
                             startRecording();
                             btnRec.setText(R.string.STOP);
-                        } else {
-                            stopRecording(recordId);
-                            btnRec.setText(R.string.REC);
                         }
                     } else {
                         requestPermissions();
@@ -351,8 +395,12 @@ public class RegularActivity extends BaseActivity implements View.OnClickListene
     }
 
     private void stopRecording(Integer recordID) {
-        extAudioRecorder.stop();
-        extAudioRecorder.release();
+        if (extAudioRecorder != null) {
+            extAudioRecorder.stop();
+            extAudioRecorder.release();
+        }
+
+        if (recordID == null) return;
 
         // Upload user recording.
         File audioFileName = new File(PATH);
@@ -373,6 +421,9 @@ public class RegularActivity extends BaseActivity implements View.OnClickListene
                     if (response.code() == HttpURLConnection.HTTP_OK) {
                         ObenUserAvatar savedAvatar = response.body().UserAvatar;
                         if (savedAvatar.status.equalsIgnoreCase("SUCCESS")) {
+                            if (avatarID == null) {
+                                helperUtils.avatarLoaded = false;
+                            }
                             avatarID = savedAvatar.avatarId;
                             getRecordedSentences();
                         } else {

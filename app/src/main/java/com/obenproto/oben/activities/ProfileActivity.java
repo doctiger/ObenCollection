@@ -86,9 +86,9 @@ public class ProfileActivity extends BaseActivity implements View.OnClickListene
 
     private void showAvatarInfo(GetAllUserAvatarsResponse response) {
         String notExist = "n/a";
-        AvatarInfo regular = response.getAvatar(1);
-        AvatarInfo commercial = response.getAvatar(2);
-        AvatarInfo freestyle = response.getAvatar(3);
+        AvatarInfo regular = response.getAvatar(REGULAR_MODE);
+        AvatarInfo commercial = response.getAvatar(COMMERCIAL_MODE);
+        AvatarInfo freestyle = response.getAvatar(FREESTYLE_MODE);
         if (regular != null) {
             tvRegular.setText(String.valueOf(regular.Avatar.avatarId));
         } else {

@@ -21,14 +21,21 @@ import retrofit.http.Path;
 
 public interface APIService {
 
-    ////  Recall of user login
     @FormUrlEncoded
     @POST("morphing/ws/MorphingService/loginUser")
     Call<LoginResponse> userLogin(@Field("userEmail") String userEmail,
                                   @Field("userPassword") String userPassword,
                                   @Field("userDisplayName") String userDisplayName);
 
-    ////  Recall of save user avatar ( ​updated since 1.0 release ​)
+    /**
+     * Get all user avatars.
+     *
+     * @param userId User ID.
+     * @return All user avatars as ArrayList object.
+     */
+    @GET("morphing/ws/MorphingService/getAllUserAvatars/{userId}")
+    Call<GetAllUserAvatarsResponse> getAllUserAvatars(@Path("userId") Integer userId);
+
     @Multipart
     @POST("morphing/ws/MorphingService/saveUserAvatar/mode/{mode}")
     Call<SaveUserAvatarResponse> saveUserAvatar(@Path("mode") Integer mode,
@@ -37,7 +44,6 @@ public interface APIService {
                                                 @Part("audioFile") RequestBody audioFile,
                                                 @Part("avatarId") Integer avatarId);
 
-    ////  Recall of save commercial avatar ( ​updated since 1.0 release ​)
     @Multipart
     @POST("morphing/ws/MorphingService/saveUserAvatar/mode/2")
     Call<ObenApiResponse> saveCommercialUserAvatar(@Part("userId") int userId,
@@ -51,7 +57,6 @@ public interface APIService {
                                                            @Part("recordId") int recordId,
                                                            @Part("audioFile") RequestBody audioFile);
 
-    ////  Recall of save freestyle avatar ( ​updated since 1.0 release ) ​
     @Multipart
     @POST("morphing/ws/MorphingService/saveUserAvatar/mode/3")
     Call<ObenApiResponse> saveFreestyleUserAvatar(@Part("userId") int userId,
@@ -65,22 +70,11 @@ public interface APIService {
                                                           @Part("recordId") int recordId,
                                                           @Part("audioFile") RequestBody audioFile);
 
-    ////    Recall of user logout
     @POST("morphing/ws/MorphingService/logoutUser")
     Call<ObenApiResponse> userLogout();
 
-    ////    Recall of avatar data
     @GET("morphing/ws/MorphingService/getAvatar/{avatarId}")
     Call<ObenApiResponse> getAvatarData(@Path("avatarId") int avatarId);
-
-    /**
-     * Get all user avatars.
-     *
-     * @param userId User ID.
-     * @return All user avatars as ArrayList object.
-     */
-    @GET("morphing/ws/MorphingService/getAllUserAvatars/{userId}")
-    Call<GetAllUserAvatarsResponse> getAllUserAvatars(@Path("userId") Integer userId);
 
     /**
      * Get avatar data from avatar ID.
@@ -89,19 +83,19 @@ public interface APIService {
      * @return Recorded sentences of avatar ID.
      */
     @GET("morphing/ws/MorphingService/getAvatar/{avatarId}")
-    Call<GetAvatarResponse> getAvatar(@Path("avatarId") int avatarId);
+    Call<GetAvatarResponse> getAvatar(@Path("avatarId") Integer avatarId);
 
     /**
      * Get the avatar ID for Commercial
      */
     @GET("morphing/ws/MorphingService/getAvatars/{userId}/mode/2")
-    Call<List<ObenApiResponse>> getCommercialAvatars(@Path("userId") int userId);
+    Call<List<ObenApiResponse>> getCommercialAvatars(@Path("userId") Integer userId);
 
     /**
      * Get the avatar ID for Freestyle
      */
     @GET("morphing/ws/MorphingService/getAvatars/{userId}/mode/3")
-    Call<List<ObenApiResponse>> getFreestyleAvatars(@Path("userId") int userId);
+    Call<List<ObenApiResponse>> getFreestyleAvatars(@Path("userId") Integer userId);
 
     /**
      * Get all phrases.
@@ -110,5 +104,5 @@ public interface APIService {
      * @return All phrases as list object.
      */
     @GET("morphing/ws/MorphingService/getPhrases/mode/{mode}")
-    Call<GetPhrasesResponse> getPhrases(@Path("mode") int mode);
+    Call<GetPhrasesResponse> getPhrases(@Path("mode") Integer mode);
 }

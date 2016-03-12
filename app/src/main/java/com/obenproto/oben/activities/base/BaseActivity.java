@@ -24,6 +24,10 @@ public class BaseActivity extends Activity {
     protected LocalStorage localStorage;
     protected CommonUtils helperUtils;
 
+    protected final int REGULAR_MODE = 1;
+    protected final int COMMERCIAL_MODE = 2;
+    protected final int FREESTYLE_MODE = 3;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
