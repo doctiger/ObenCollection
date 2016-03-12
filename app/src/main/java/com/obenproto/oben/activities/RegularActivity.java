@@ -56,7 +56,7 @@ public class RegularActivity extends BaseActivity implements View.OnClickListene
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.regular_activity);
+        setContentView(R.layout.activity_regular);
 
         // Map view elements to class members.
         progressView = (RelativeLayout) findViewById(R.id.layout_progress_view);
