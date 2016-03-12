@@ -111,8 +111,8 @@ public class CommercialActivity extends BaseActivity implements View.OnClickList
 
     private void getAvatar() {
         if (helperUtils.avatarLoaded) {
-            if (helperUtils.regular != null) {
-                avatarID = helperUtils.regular.Avatar.avatarId;
+            if (helperUtils.commercial != null) {
+                avatarID = helperUtils.commercial.Avatar.avatarId;
                 getRecordedSentences();
             } else {
                 populateListView();
@@ -188,7 +188,6 @@ public class CommercialActivity extends BaseActivity implements View.OnClickList
     }
 
     private void requestLogout() {
-        ObenUser.removeSavedUser();
         showLoginPage();
     }
 

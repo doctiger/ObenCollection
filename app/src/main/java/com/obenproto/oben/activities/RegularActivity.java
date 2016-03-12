@@ -188,7 +188,6 @@ public class RegularActivity extends BaseActivity implements View.OnClickListene
     }
 
     private void requestLogout() {
-        ObenUser.removeSavedUser();
         showLoginPage();
     }
 
