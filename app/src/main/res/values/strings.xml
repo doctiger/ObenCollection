@@ -26,6 +26,7 @@
         We apologize for any inconvenience.</string>
     <string name="exit_message_str">All of your recordings have been saved.
         You may return and continue recording where you left off at any time.</string>
+    <string name="Grant_necessary_permissions">Please go to app settings and grant all necessary permissions</string>
 
     <!-- String Resources for Login Activity -->
     <string name="Please_Login">Please Login</string>
