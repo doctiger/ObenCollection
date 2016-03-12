@@ -2,6 +2,8 @@ package com.obenproto.oben.api;
 
 import com.obenproto.oben.api.domain.ObenPhrase;
 import com.obenproto.oben.api.response.GetAllUserAvatarsResponse;
+import com.obenproto.oben.api.response.GetAvatarResponse;
+import com.obenproto.oben.api.response.GetPhrasesResponse;
 import com.obenproto.oben.api.response.GetUserAvatarResponse;
 import com.obenproto.oben.api.response.LoginResponse;
 import com.obenproto.oben.api.response.ObenApiResponse;
@@ -34,7 +36,7 @@ public interface APIService {
     Call<ObenApiResponse> saveUserAvatar(@Part("userId") int userId,
                                          @Part("recordId") int recordId,
                                          @Part("audioFile") RequestBody audioFile,
-                                         @Part("avatarId") int avatarId);
+                                         @Part("avatarId") Integer avatarId);
 
     ////  Recall of save user avatar ( ​updated since 1.0 release ​)
     ////  (don't exit the avatarID)Create the avatarID for regular, commercial and freestyle
@@ -108,6 +110,15 @@ public interface APIService {
     Call<GetAllUserAvatarsResponse> getAllUserAvatars(@Path("userId") Integer userId);
 
     /**
+     * Get avatar data from avatar ID.
+     *
+     * @param avatarId Avatar ID.
+     * @return Recorded sentences of avatar ID.
+     */
+    @GET("morphing/ws/MorphingService/getAvatar/{avatarId}")
+    Call<GetAvatarResponse> getAvatar(@Path("avatarId") int avatarId);
+
+    /**
      * Get the avatar ID for Commercial
      */
     @GET("morphing/ws/MorphingService/getAvatars/{userId}/mode/2")
@@ -126,5 +137,5 @@ public interface APIService {
      * @return All phrases as list object.
      */
     @GET("morphing/ws/MorphingService/getPhrases/mode/{mode}")
-    Call<ArrayList<ObenPhrase>> getPhraseData(@Path("mode") int mode);
+    Call<GetPhrasesResponse> getPhrases(@Path("mode") int mode);
 }

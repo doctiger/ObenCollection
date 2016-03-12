@@ -10,6 +10,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.obenproto.oben.R;
+import com.obenproto.oben.api.domain.AvatarInfo;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,6 +21,9 @@ import java.util.regex.Pattern;
  * Created by Petro Rington on 2/3/2016.
  */
 public class CommonUtils {
+
+    public boolean avatarLoaded;
+    public AvatarInfo regular, commercial, freestyle;
 
     private Context context;
     private static CommonUtils mInstance = null;

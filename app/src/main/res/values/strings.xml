@@ -48,4 +48,9 @@
     <string name="Regular">Regular</string>
     <string name="Commercial">Commercial</string>
     <string name="Freestyle">Freestyle</string>
+
+    <!-- String Resources for Regular Activity -->
+    <string name="Hear_Sample">Hear Sample</string>
+    <string name="LISTEN">LISTEN</string>
+    <string name="REC">REC</string>
 </resources>

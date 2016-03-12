@@ -57,6 +57,7 @@ public class ProfileActivity extends BaseActivity implements View.OnClickListene
     private void getAllUserAvatars() {
         ObenUser user = ObenUser.getSavedUser();
         if (user != null) {
+            helperUtils.avatarLoaded = false;
             progressView.setVisibility(View.VISIBLE);
             Call<GetAllUserAvatarsResponse> call = APIClient.getAPIService().getAllUserAvatars(user.userId);
             call.enqueue(new Callback<GetAllUserAvatarsResponse>() {
@@ -65,6 +66,7 @@ public class ProfileActivity extends BaseActivity implements View.OnClickListene
                     progressView.setVisibility(View.GONE);
                     if (response.code() == HttpURLConnection.HTTP_OK) {
                         if (response.body() != null) {
+                            helperUtils.avatarLoaded = true;
                             showAvatarInfo(response.body());
                         }
                     } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
@@ -102,6 +104,11 @@ public class ProfileActivity extends BaseActivity implements View.OnClickListene
         } else {
             tvFreestyle.setText(notExist);
         }
+
+        // Save loaded avatar info.
+        helperUtils.regular = regular;
+        helperUtils.commercial = commercial;
+        helperUtils.freestyle = freestyle;
     }
 
     @Override

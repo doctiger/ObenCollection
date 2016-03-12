@@ -23,8 +23,8 @@ import com.obenproto.oben.ServerSocket.SimpleClient;
 import com.obenproto.oben.ServerSocket.SimpleServer;
 import com.obenproto.oben.activities.CommercialActivity;
 import com.obenproto.oben.activities.ProfileActivity;
-import com.obenproto.oben.api.ObenAPIClient;
-import com.obenproto.oben.api.ObenAPIService;
+import com.obenproto.oben.api.APIClient;
+import com.obenproto.oben.api.APIService;
 import com.obenproto.oben.recorder.ExtAudioRecorder;
 import com.obenproto.oben.api.response.ObenApiResponse;
 import com.squareup.okhttp.MediaType;
@@ -242,7 +242,7 @@ public class CommercialListViewAdapter extends BaseAdapter {
 
     // Upload the recorded audio file.
     public void onSaveRegularAvatar(int userId, final int recordId, RequestBody audioFile, final int avatarId) {
-        ObenAPIService client = ObenAPIClient.newInstance(ObenAPIService.class);
+        APIService client = APIClient.newInstance(APIService.class);
 
         Call<ObenApiResponse> call;
         if (avatarId == 0) {
