@@ -1,82 +1,206 @@
 package com.obenproto.oben.activities;
 
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.util.Log;
+import android.os.Environment;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.ListView;
-import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.obenproto.oben.R;
-import com.obenproto.oben.adapters.CommercialListViewAdapter;
-import com.obenproto.oben.api.ObenAPIClient;
-import com.obenproto.oben.api.ObenAPIService;
-import com.obenproto.oben.api.response.ObenApiResponse;
+import com.obenproto.oben.activities.base.BaseActivity;
+import com.obenproto.oben.api.APIClient;
+import com.obenproto.oben.api.domain.ObenPhrase;
+import com.obenproto.oben.api.domain.ObenUser;
+import com.obenproto.oben.api.domain.ObenUserAvatar;
+import com.obenproto.oben.api.response.GetAllUserAvatarsResponse;
+import com.obenproto.oben.api.response.GetAvatarResponse;
+import com.obenproto.oben.api.response.GetPhrasesResponse;
+import com.obenproto.oben.api.response.SaveUserAvatarResponse;
+import com.obenproto.oben.recorder.ExtAudioRecorder;
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.RequestBody;
 
+import java.io.File;
 import java.net.HttpURLConnection;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import retrofit.Call;
 import retrofit.Callback;
 import retrofit.Response;
 import retrofit.Retrofit;
 
-public class CommercialActivity extends Activity {
+public class CommercialActivity extends BaseActivity implements View.OnClickListener {
 
-    public static int LIMIT_NUM = 286;
-    public static int COMMERCIAL_PHRASES_COUNT = 0;
-    public static Context context;
-    public static ArrayList<HashMap<String, String>> list;
-    public static CommercialListViewAdapter adapter;
-    public static ListView listView;
-    public static ProgressBar progressBar;
-    public static int recordcount = 0;
-    public static List<ObenApiResponse> phraseList;
-    public static Activity activity = null;
-    public static Map recordMap;
-    public static Map avatarMap;
-    SharedPreferences pref;
-    SharedPreferences.Editor editor;
+    private static final int LIMIT_COUNT = 286;
+    private final int CURRENT_MODE = COMMERCIAL_MODE;
+
+    RelativeLayout progressView;
+    ListView listView;
+    LayoutInflater inflater;
+
+    Integer avatarID = null;
+    GetPhrasesResponse phrasesData;
+    GetAvatarResponse avatarData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.commercial_activity);
-        activity = this;
+        setContentView(R.layout.activity_commercial);
 
-        context = this.getBaseContext();
-        pref = PreferenceManager.getDefaultSharedPreferences(this);
-        editor = pref.edit();
-
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        progressBar.setVisibility(View.VISIBLE);
-
+        // Map view elements to class members.
+        progressView = (RelativeLayout) findViewById(R.id.layout_progress_view);
         listView = (ListView) findViewById(R.id.listView);
-        list = new ArrayList<>();
+        inflater = LayoutInflater.from(this);
 
-        // Get the list contents.
-        onGetPhrases();
+        // Map event handlers.
+        findViewById(R.id.cancelBtn).setOnClickListener(this);
 
-        TextView cancelTxt = (TextView) findViewById(R.id.cancelBtn);
-        cancelTxt.setOnClickListener(new View.OnClickListener() {
+        // Recall get all phrases endpoint to fetch all phrases for regular mode.
+        getAllPhrases();
+    }
+
+    @Override
+    protected void showProgress() {
+        progressView.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    protected void dismissProgress() {
+        progressView.setVisibility(View.GONE);
+    }
+
+    private void getAllPhrases() {
+        showProgress();
+        Call<GetPhrasesResponse> call = APIClient.getAPIService().getPhrases(CURRENT_MODE);
+        call.enqueue(new Callback<GetPhrasesResponse>() {
             @Override
-            public void onClick(View v) {
-                showAlert();
+            public void onResponse(Response<GetPhrasesResponse> response, Retrofit retrofit) {
+                dismissProgress();
+                if (response.code() == HttpURLConnection.HTTP_OK) {
+                    phrasesData = response.body();
+                    getAvatar();
+                } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                    helperUtils.showMessage(R.string.unauthorized_toast);
+                    requestLogout();
+                } else {
+                    helperUtils.showMessage("Network error");
+                    finish();
+                }
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                dismissProgress();
+                helperUtils.showMessage(t.getLocalizedMessage());
+                finish();
             }
         });
+    }
+
+    private void getAvatar() {
+        if (helperUtils.avatarLoaded) {
+            if (helperUtils.regular != null) {
+                avatarID = helperUtils.regular.Avatar.avatarId;
+                getRecordedSentences();
+            } else {
+                populateListView();
+            }
+        } else {
+            getAllUserAvatars();
+        }
+    }
+
+    private void getAllUserAvatars() {
+        ObenUser user = ObenUser.getSavedUser();
+        if (user != null) {
+            Call<GetAllUserAvatarsResponse> call = APIClient.getAPIService().getAllUserAvatars(user.userId);
+            call.enqueue(new Callback<GetAllUserAvatarsResponse>() {
+                @Override
+                public void onResponse(Response<GetAllUserAvatarsResponse> response, Retrofit retrofit) {
+                    dismissProgress();
+                    if (response.code() == HttpURLConnection.HTTP_OK) {
+                        GetAllUserAvatarsResponse result = response.body();
+                        if (result != null) {
+                            helperUtils.avatarLoaded = true;
+                            helperUtils.regular = result.getAvatar(REGULAR_MODE);
+                            helperUtils.commercial = result.getAvatar(COMMERCIAL_MODE);
+                            helperUtils.freestyle = result.getAvatar(FREESTYLE_MODE);
+
+                            getAvatar();
+                        }
+                    } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                        helperUtils.showMessage(R.string.unauthorized_toast);
+                        requestLogout();
+                    } else {
+                        helperUtils.showMessage("Network error");
+                        finish();
+                    }
+                }
+
+                @Override
+                public void onFailure(Throwable t) {
+                    dismissProgress();
+                    helperUtils.showMessage(t.getLocalizedMessage());
+                    finish();
+                }
+            });
+        }
+    }
+
+    private void getRecordedSentences() {
+        showProgress();
+        Call<GetAvatarResponse> call = APIClient.getAPIService().getAvatar(avatarID);
+        call.enqueue(new Callback<GetAvatarResponse>() {
+            @Override
+            public void onResponse(Response<GetAvatarResponse> response, Retrofit retrofit) {
+                dismissProgress();
+                if (response.code() == HttpURLConnection.HTTP_OK) {
+                    avatarData = response.body();
+                    populateListView();
+                } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                    helperUtils.showMessage(R.string.unauthorized_toast);
+                    requestLogout();
+                } else {
+                    helperUtils.showMessage("Network error");
+                    finish();
+                }
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                dismissProgress();
+                helperUtils.showMessage(t.getLocalizedMessage());
+                finish();
+            }
+        });
+    }
+
+    private void requestLogout() {
+        ObenUser.removeSavedUser();
+        showLoginPage();
+    }
+
+    private void showLoginPage() {
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+
+    private void populateListView() {
+        listView.setAdapter(new RegularAdapter());
     }
 
     @Override
@@ -84,12 +208,11 @@ public class CommercialActivity extends Activity {
         showAlert();
     }
 
-    public void showAlert() {
-        if (CommercialListViewAdapter.isAudioPlaying) {
-            CommercialListViewAdapter.mediaPlayerListen.stop();
-        }
+    private void showAlert() {
+        stopPlaying();
+        stopRecording(null);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(CommercialActivity.this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Save & Exit");
         builder.setMessage(R.string.exit_message_str);
         builder.setCancelable(true);
@@ -97,6 +220,7 @@ public class CommercialActivity extends Activity {
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        stopPlaying();
                         finish();
                         dialog.cancel();
                     }
@@ -112,178 +236,214 @@ public class CommercialActivity extends Activity {
         alertDialog.show();
     }
 
-    public static void populateList(int index) {
-        HashMap<String, String> temp = new HashMap<>();
-
-        Log.d("Index", String.valueOf(index));
-        if (index >= LIMIT_NUM) index = LIMIT_NUM - 1;
-
-        if (index < 9) {
-            temp.put(String.valueOf(0), phraseList.get(index % COMMERCIAL_PHRASES_COUNT).Phrase.getSentence());
-            list.add(temp);
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.cancelBtn) {
+            showAlert();
         }
-
-        for (int i = 1; i <= index; i++) {
-            temp.put(String.valueOf(i), phraseList.get((index - i) % COMMERCIAL_PHRASES_COUNT).Phrase.getSentence());
-            list.add(temp);
-        }
-
-        adapter = new CommercialListViewAdapter(context, list);
-        listView.setAdapter(adapter);
-
     }
 
-    public static void refreshListView() {
-        activity.finish();
-        activity.startActivity(activity.getIntent());
-    }
+    private class RegularAdapter extends BaseAdapter {
 
-    // Get the avatarID for commercial
-    public void onCommercialAvatarID(int userId) {
+        @Override
+        public int getCount() {
+            int recordCount = 0;
+            if (avatarData != null) {
+                recordCount = avatarData.getRecordCount();
+            }
+            return recordCount < LIMIT_COUNT ? recordCount + 1 : LIMIT_COUNT;
+        }
 
-        ObenAPIService client = ObenAPIClient.newInstance(ObenAPIService.class);
-        Call<List<ObenApiResponse>> call = client.getCommercialAvatars(userId);
+        @Override
+        public Integer getItem(int position) {
+            return getCount() - position; // Return record ID.
+        }
 
-        call.enqueue(new Callback<List<ObenApiResponse>>() {
-            @Override
-            public void onResponse(Response<List<ObenApiResponse>> response, Retrofit retrofit) {
-                if (response.code() == HttpURLConnection.HTTP_OK) {
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
 
-                    if (response.body().size() == 0) {
-                        editor.putInt("CommercialAvatarID", 0);
-                        progressBar.setVisibility(View.GONE);
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            if (convertView == null) {
+                convertView = inflater.inflate(R.layout.record_item, parent, false);
+            }
 
-                        populateList(0);
+            TextView tvSentence = (TextView) convertView.findViewById(R.id.descriptionTxt);
+            Button btnHearSample = (Button) convertView.findViewById(R.id.hearSampleBtn);
+            final Button btnListen = (Button) convertView.findViewById(R.id.listenBtn);
+            final Button btnRec = (Button) convertView.findViewById(R.id.recBtn);
 
-                    } else {
-                        ObenApiResponse response_result = response.body().get(0);
-                        avatarMap = (Map) response_result.Avatar;
+            final Integer recordId = getItem(position);
+            final ObenPhrase.PhraseObj phrase = phrasesData.getPhraseByRecordID(recordId);
+            tvSentence.setText(phrase.sentence);
 
-                        if (avatarMap != null) {
-                            editor.putInt("CommercialAvatarID", Float.valueOf(avatarMap.get("avatarId").toString()).intValue());
+            // Setup function for Hear Sample button.
+            btnHearSample.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (!isRecording) {
+                        listenFrom(phrase.example);
+                    }
+                }
+            });
 
-                            // Get the avatar data.
-                            onAvatarData(pref.getInt("CommercialAvatarID", 0));
+            // Setup function for LISTEN button.
+            if (avatarData == null || avatarData.getSentence(recordId) == null) {
+                btnListen.setAlpha(0.1f);
+                btnListen.setEnabled(false);
+            } else {
+                btnListen.setAlpha(1.0f);
+                btnListen.setEnabled(true);
+            }
+            btnListen.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (!isRecording) {
+                        listenFrom(avatarData.getSentence(recordId));
+                    }
+                }
+            });
 
+            // Setup function for REC button.
+            btnRec.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (hasGrantedAppPermissions()) {
+                        stopPlaying();
+                        String stop = getString(R.string.STOP);
+                        if (isRecording) {
+                            if (btnRec.getText().toString().equalsIgnoreCase(stop)) {
+                                isRecording = false;
+                                stopRecording(recordId);
+                                btnRec.setText(R.string.REC);
+                            }
                         } else {
-                            editor.putInt("CommercialAvatarID", 0);
-                            progressBar.setVisibility(View.GONE);
-
-                            populateList(0);
+                            isRecording = true;
+                            startRecording();
+                            btnRec.setText(R.string.STOP);
                         }
+                    } else {
+                        requestPermissions();
                     }
-
-                    editor.commit();
-                    Log.d("Commercial avatarID", String.valueOf(pref.getInt("CommercialAvatarID", 0)));
-
-                } else {
-                    Log.d("Status", "Http Unauthorized");
                 }
-            }
+            });
 
-            @Override
-            public void onFailure(Throwable t) {
-                Log.d("Commercial avtar ID", t.getMessage());
-            }
-        });
+            return convertView;
+        }
+
+        private void listenFrom(String sentence) {
+            new PlayTask().execute(sentence);
+        }
     }
 
-    //// Get the all avatar data for Commercial.
-    public void onAvatarData(int avatarId) {
-        ObenAPIService client = ObenAPIClient.newInstance(ObenAPIService.class);
-        Call<ObenApiResponse> call = client.getAvatarData(avatarId);
+    private MediaPlayer mediaPlayer;
 
-        call.enqueue(new Callback<ObenApiResponse>() {
-            @Override
-            public void onResponse(Response<ObenApiResponse> response, Retrofit retrofit) {
-                if (response.code() == HttpURLConnection.HTTP_OK) { // success
-                    ObenApiResponse response_result = response.body();
-                    recordMap = (Map) response_result.Avatar;
-                    Log.d("debug avatar List", String.valueOf(recordMap.get("record" + 5)));
-
-                    progressBar.setVisibility(View.GONE);
-                    if (recordMap.get("status") == null) {
-                        String str = recordMap.get("recordCount").toString();
-                        recordcount = Float.valueOf(str).intValue();
-                        Log.d("debug record count", String.valueOf(recordcount));
-
-                        editor.putInt("CommercialRecordedCount", recordcount);
-                        editor.apply();
-
-                        listView = (ListView) findViewById(R.id.listView);
-                        list = new ArrayList<>();
-
-                        Log.d("Record count : ", String.valueOf(recordcount));
-                        if (recordcount > LIMIT_NUM) recordcount = LIMIT_NUM;
-
-                        populateList(recordcount);
-
-                    } else {
-
-                        populateList(0);
-                        Log.d("Status", "Avatar with id 4 not found");
-                    }
-
-
-                } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
-                    Log.d("Status", "Http Unauthorized");
-                    Toast.makeText(getApplicationContext(), R.string.unauthorized_toast, Toast.LENGTH_LONG).show();
-                    editor.putString("InitialLogin", "no");
-                    editor.apply();
-
-                    startActivity(new Intent(CommercialActivity.this, ProfileActivity.class));
-                    finish();
-
-                } else {
-                    Log.d("Status", "Server Connection Failure");
-                }
+    private void stopPlaying() {
+        if (mediaPlayer != null) {
+            try {
+                mediaPlayer.stop();
+            } catch (IllegalStateException e) {
+                e.printStackTrace();
             }
-
-            @Override
-            public void onFailure(Throwable t) {
-
-            }
-        });
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
     }
 
-    public void onGetPhrases() {
-        ObenAPIService client = ObenAPIClient.newInstance(ObenAPIService.class);
-        Call<List<ObenApiResponse>> call = client.getPhraseData(2);
+    private class PlayTask extends AsyncTask<String, Void, Void> {
 
-        call.enqueue(new Callback<List<ObenApiResponse>>() {
-            @Override
-            public void onResponse(Response<List<ObenApiResponse>> response, Retrofit retrofit) {
-                if (response.code() == HttpURLConnection.HTTP_OK) { // success
-                    phraseList = response.body();
-
-                    COMMERCIAL_PHRASES_COUNT = phraseList.size();
-                    Log.d("phrases count", String.valueOf(COMMERCIAL_PHRASES_COUNT));
-
-                    // get the avatar data for show listview.
-                    if (pref.getInt("CommercialAvatarID", 0) == 0) {
-                        onCommercialAvatarID(pref.getInt("userID", 0));
-                    } else {
-                        onAvatarData(pref.getInt("CommercialAvatarID", 0));
-                    }
-
-                } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
-                    Log.d("Status", "Http Unauthorized");
-                    Toast.makeText(getApplicationContext(), R.string.unauthorized_toast, Toast.LENGTH_LONG).show();
-                    editor.putString("InitialLogin", "no");
-                    editor.apply();
-
-                    startActivity(new Intent(CommercialActivity.this, ProfileActivity.class));
-                    finish();
-
-                } else {
-                    Log.d("Status", "Server Connection Failure");
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            showProgress();
+            stopPlaying();
+            mediaPlayer = new MediaPlayer();
+            mediaPlayer.setVolume(1.0f, 1.0f);
+            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mp) {
+                    dismissProgress();
                 }
-            }
+            });
+        }
 
-            @Override
-            public void onFailure(Throwable t) {
-                Log.d("Failure", t.getMessage());
+        @Override
+        protected Void doInBackground(String... params) {
+            try {
+                mediaPlayer.setDataSource(params[0]);
+                mediaPlayer.prepare();
+                mediaPlayer.start();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        });
+            return null;
+        }
+    }
+
+    boolean isRecording = false;
+    final String PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "/oben_audio.wav";
+    ExtAudioRecorder extAudioRecorder;
+
+    private void startRecording() {
+        // Uncompressed recording (WAV) : IF true - AMR
+        extAudioRecorder = ExtAudioRecorder.getInstanse(false);
+        extAudioRecorder.setOutputFile(PATH);
+        extAudioRecorder.prepare();
+        extAudioRecorder.start();
+    }
+
+    private void stopRecording(Integer recordID) {
+        if (extAudioRecorder != null) {
+            extAudioRecorder.stop();
+            extAudioRecorder.release();
+        }
+
+        if (recordID == null) return;
+
+        // Upload user recording.
+        File audioFileName = new File(PATH);
+        RequestBody requestBody = RequestBody.create(MediaType.parse("audio/wav"), audioFileName);
+        saveAvatar(recordID, requestBody);
+    }
+
+    private void saveAvatar(Integer recordID, RequestBody requestBody) {
+        ObenUser user = ObenUser.getSavedUser();
+        if (user != null) {
+            showProgress();
+            Call<SaveUserAvatarResponse> call = APIClient.getAPIService().saveUserAvatar(
+                    CURRENT_MODE, user.userId, recordID, requestBody, avatarID);
+            call.enqueue(new Callback<SaveUserAvatarResponse>() {
+                @Override
+                public void onResponse(Response<SaveUserAvatarResponse> response, Retrofit retrofit) {
+                    dismissProgress();
+                    if (response.code() == HttpURLConnection.HTTP_OK) {
+                        ObenUserAvatar savedAvatar = response.body().UserAvatar;
+                        if (savedAvatar.status.equalsIgnoreCase("SUCCESS")) {
+                            if (avatarID == null) {
+                                helperUtils.avatarLoaded = false;
+                            }
+                            avatarID = savedAvatar.avatarId;
+                            getRecordedSentences();
+                        } else {
+                            helperUtils.showMessage(savedAvatar.message);
+                        }
+                    } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                        helperUtils.showMessage(R.string.unauthorized_toast);
+                        requestLogout();
+                    } else {
+                        helperUtils.showMessage("Network error");
+                    }
+                }
+
+                @Override
+                public void onFailure(Throwable t) {
+                    dismissProgress();
+                    helperUtils.showMessage(t.getLocalizedMessage());
+                }
+            });
+        }
     }
 }

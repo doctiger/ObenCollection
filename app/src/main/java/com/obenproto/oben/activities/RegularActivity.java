@@ -43,6 +43,7 @@ import retrofit.Retrofit;
 public class RegularActivity extends BaseActivity implements View.OnClickListener {
 
     private static final int LIMIT_COUNT = 36;
+    private final int CURRENT_MODE = REGULAR_MODE;
 
     RelativeLayout progressView;
     ListView listView;
@@ -82,7 +83,7 @@ public class RegularActivity extends BaseActivity implements View.OnClickListene
 
     private void getAllPhrases() {
         showProgress();
-        Call<GetPhrasesResponse> call = APIClient.getAPIService().getPhrases(REGULAR_MODE);
+        Call<GetPhrasesResponse> call = APIClient.getAPIService().getPhrases(CURRENT_MODE);
         call.enqueue(new Callback<GetPhrasesResponse>() {
             @Override
             public void onResponse(Response<GetPhrasesResponse> response, Retrofit retrofit) {
@@ -413,7 +414,7 @@ public class RegularActivity extends BaseActivity implements View.OnClickListene
         if (user != null) {
             showProgress();
             Call<SaveUserAvatarResponse> call = APIClient.getAPIService().saveUserAvatar(
-                    REGULAR_MODE, user.userId, recordID, requestBody, avatarID);
+                    CURRENT_MODE, user.userId, recordID, requestBody, avatarID);
             call.enqueue(new Callback<SaveUserAvatarResponse>() {
                 @Override
                 public void onResponse(Response<SaveUserAvatarResponse> response, Retrofit retrofit) {
