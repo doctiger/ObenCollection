@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Oben</string>
 
+    <string name="Network_Error">Network Error</string>
     <string name="unauthorized_toast">We have experienced a Network Error.
         We have successfully saved all your work and you can now resume where you left off.
         We apologize for any inconvenience.</string>
@@ -13,6 +14,9 @@
     <string name="Email">Email</string>
     <string name="Password">Password</string>
     <string name="Login">Login</string>
+    <string name="Empty_Email">Email cannot be empty</string>
+    <string name="Empty_Password">Password can not be empty</string>
+    <string name="Invalid_Email">Invalid email</string>
 
     <!-- String Resources for Profile Activity -->
     <string name="Your_Profile">Your Profile</string>

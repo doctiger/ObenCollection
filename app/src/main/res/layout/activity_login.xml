@@ -45,7 +45,8 @@
                 android:background="@drawable/rounded_edittext"
                 android:ems="9"
                 android:gravity="center"
-                android:inputType="textEmailAddress" />
+                android:inputType="textEmailAddress"
+                android:padding="4dp" />
         </LinearLayout>
 
         <LinearLayout
@@ -70,7 +71,8 @@
                 android:background="@drawable/rounded_edittext"
                 android:ems="9"
                 android:gravity="center"
-                android:inputType="textPassword" />
+                android:inputType="textPassword"
+                android:padding="4dp" />
         </LinearLayout>
     </LinearLayout>
 

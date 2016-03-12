@@ -95,7 +95,7 @@ public class RegularActivity extends BaseActivity implements View.OnClickListene
                     helperUtils.showMessage(R.string.unauthorized_toast);
                     requestLogout();
                 } else {
-                    helperUtils.showMessage("Network error");
+                    helperUtils.showMessage(R.string.Network_Error);
                     finish();
                 }
             }
@@ -144,7 +144,7 @@ public class RegularActivity extends BaseActivity implements View.OnClickListene
                         helperUtils.showMessage(R.string.unauthorized_toast);
                         requestLogout();
                     } else {
-                        helperUtils.showMessage("Network error");
+                        helperUtils.showMessage(R.string.Network_Error);
                         finish();
                     }
                 }
@@ -173,7 +173,7 @@ public class RegularActivity extends BaseActivity implements View.OnClickListene
                     helperUtils.showMessage(R.string.unauthorized_toast);
                     requestLogout();
                 } else {
-                    helperUtils.showMessage("Network error");
+                    helperUtils.showMessage(R.string.Network_Error);
                     finish();
                 }
             }
@@ -433,7 +433,7 @@ public class RegularActivity extends BaseActivity implements View.OnClickListene
                         helperUtils.showMessage(R.string.unauthorized_toast);
                         requestLogout();
                     } else {
-                        helperUtils.showMessage("Network error");
+                        helperUtils.showMessage(R.string.Network_Error);
                     }
                 }
 

@@ -72,6 +72,8 @@ public class ProfileActivity extends BaseActivity implements View.OnClickListene
                     } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                         helperUtils.showMessage(R.string.unauthorized_toast);
                         showLoginPage();
+                    } else {
+                        helperUtils.showMessage(R.string.Network_Error);
                     }
                 }
 

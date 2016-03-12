@@ -58,14 +58,14 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
 
         // Compare user login info.
         if (TextUtils.isEmpty(email)) {
-            emailText.setError("Email cannot be empty");
-            emailText.focusSearch(View.FOCUS_DOWN);
+            helperUtils.showMessage(R.string.Empty_Email);
+            helperUtils.shakeForError(emailText);
         } else if (TextUtils.isEmpty(password)) {
-            passwordText.setError("Password can not be empty");
-            passwordText.focusSearch(View.FOCUS_DOWN);
+            helperUtils.showMessage(R.string.Empty_Password);
+            helperUtils.shakeForError(passwordText);
         } else if (!helperUtils.validateEmail(email)) {
-            emailText.setError("Invalid email");
-            emailText.focusSearch(View.FOCUS_DOWN);
+            helperUtils.showMessage(R.string.Invalid_Email);
+            helperUtils.shakeForError(emailText);
         } else {
             requestLogin(email, password);
         }
@@ -90,13 +90,14 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
                         helperUtils.showMessage(user.message);
                     }
                 } else {
-                    helperUtils.showMessage("Login failed");
+                    helperUtils.showMessage(R.string.Network_Error);
                 }
             }
 
             @Override
             public void onFailure(Throwable t) {
                 dismissProgress();
+                helperUtils.showMessage(t.getLocalizedMessage());
             }
         });
     }

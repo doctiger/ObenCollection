@@ -148,12 +148,12 @@ public class FreestyleActivity extends BaseActivity implements View.OnClickListe
                     dismissProgress();
                     if (response.code() == HttpURLConnection.HTTP_OK) {
                         ObenUserAvatar savedAvatar = response.body().UserAvatar;
-                        helperUtils.showMessage(savedAvatar.message);
+                        helperUtils.showMessage(savedAvatar.status);
                     } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                         helperUtils.showMessage(R.string.unauthorized_toast);
                         requestLogout();
                     } else {
-                        helperUtils.showMessage("Network error");
+                        helperUtils.showMessage(R.string.Network_Error);
                     }
                 }
 
