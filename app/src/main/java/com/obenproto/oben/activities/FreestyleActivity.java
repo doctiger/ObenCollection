@@ -19,8 +19,8 @@ import android.widget.Toast;
 import com.obenproto.oben.R;
 import com.obenproto.oben.ServerSocket.SimpleClient;
 import com.obenproto.oben.ServerSocket.SimpleServer;
-import com.obenproto.oben.api.ObenAPIClient;
-import com.obenproto.oben.api.ObenAPIService;
+import com.obenproto.oben.api.APIClient;
+import com.obenproto.oben.api.APIService;
 import com.obenproto.oben.recorder.ExtAudioRecorder;
 import com.obenproto.oben.api.response.ObenApiResponse;
 import com.squareup.okhttp.MediaType;
@@ -54,7 +54,7 @@ public class FreestyleActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.freestyle_activity);
+        setContentView(R.layout.activity_freestyle);
 
         start = (RelativeLayout) findViewById(R.id.start_recording_layout);
         stop = (RelativeLayout) findViewById(R.id.stop_recording_layout);
@@ -212,7 +212,7 @@ public class FreestyleActivity extends Activity {
     // Recall of save user avatar
     public void onSaveUserAvatarRequest(int userId, final int recordId, RequestBody audioFile, final int avatarId) {
         // save user avatar
-        ObenAPIService client = ObenAPIClient.newInstance(ObenAPIService.class);
+        APIService client = APIClient.newInstance(APIService.class);
 
         Call<ObenApiResponse> call;
         if (avatarId == 0) {
@@ -224,30 +224,30 @@ public class FreestyleActivity extends Activity {
         call.enqueue(new Callback<ObenApiResponse>() {
             @Override
             public void onResponse(Response<ObenApiResponse> response, Retrofit retrofit) {
-                progressBar.setVisibility(View.GONE);
-                start_rec.setEnabled(true);
-                if (response.code() == HttpURLConnection.HTTP_OK) { // success
-                    Log.v("Upload", "Success");
-                    Log.d("record ID - " + String.valueOf(recordId), "avatar ID - " + String.valueOf(avatarId));
-
-                    int regularAvatarID = response.body().UserAvatar.getAvatarId();
-                    editor.putInt("FreestyleAvatarID", regularAvatarID);
-                    editor.commit();
-
-                    Toast.makeText(getApplicationContext(), "Upload Success", Toast.LENGTH_LONG).show();
-
-                } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
-                    Log.d("Status", "Http Unauthorized");
-                    Toast.makeText(getApplicationContext(), R.string.unauthorized_toast, Toast.LENGTH_LONG).show();
-                    editor.putString("InitialLogin", "no");
-                    editor.apply();
-
-                    startActivity(new Intent(FreestyleActivity.this, ProfileActivity.class));
-                    finish();
-
-                } else {
-                    Log.d("Status", "Connection Failure");
-                }
+//                progressBar.setVisibility(View.GONE);
+//                start_rec.setEnabled(true);
+//                if (response.code() == HttpURLConnection.HTTP_OK) { // success
+//                    Log.v("Upload", "Success");
+//                    Log.d("record ID - " + String.valueOf(recordId), "avatar ID - " + String.valueOf(avatarId));
+//
+//                    int regularAvatarID = response.body().UserAvatar.getAvatarId();
+//                    editor.putInt("FreestyleAvatarID", regularAvatarID);
+//                    editor.commit();
+//
+//                    Toast.makeText(getApplicationContext(), "Upload Success", Toast.LENGTH_LONG).show();
+//
+//                } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
+//                    Log.d("Status", "Http Unauthorized");
+//                    Toast.makeText(getApplicationContext(), R.string.unauthorized_toast, Toast.LENGTH_LONG).show();
+//                    editor.putString("InitialLogin", "no");
+//                    editor.apply();
+//
+//                    startActivity(new Intent(FreestyleActivity.this, ProfileActivity.class));
+//                    finish();
+//
+//                } else {
+//                    Log.d("Status", "Connection Failure");
+//                }
             }
 
             @Override
@@ -261,7 +261,7 @@ public class FreestyleActivity extends Activity {
 
     // Get avatarID for regular
     public void onFreestyleAvatarID(int userId) {
-        ObenAPIService client = ObenAPIClient.newInstance(ObenAPIService.class);
+        APIService client = APIClient.newInstance(APIService.class);
         Call<List<ObenApiResponse>> call = client.getFreestyleAvatars(userId);
 
         call.enqueue(new Callback<List<ObenApiResponse>>() {
@@ -303,7 +303,7 @@ public class FreestyleActivity extends Activity {
 
     // Get all avatar data for freestyle
     public void onAvatarData(int avatarID) {
-        ObenAPIService client = ObenAPIClient.newInstance(ObenAPIService.class);
+        APIService client = APIClient.newInstance(APIService.class);
         Call<ObenApiResponse> call = client.getAvatarData(avatarID);
 
         call.enqueue(new Callback<ObenApiResponse>() {

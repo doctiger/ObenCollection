@@ -266,7 +266,7 @@ public class RegularActivity extends BaseActivity implements View.OnClickListene
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             if (convertView == null) {
-                convertView = inflater.inflate(R.layout.record_item, parent, false);
+                convertView = inflater.inflate(R.layout.layout_record_item, parent, false);
             }
 
             TextView tvSentence = (TextView) convertView.findViewById(R.id.descriptionTxt);

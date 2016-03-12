@@ -15,7 +15,7 @@ public class OptionActivity extends BaseActivity implements View.OnClickListener
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.option_activity);
+        setContentView(R.layout.activity_option);
 
         // Map event handlers.
         findViewById(R.id.regularLbl).setOnClickListener(this);
