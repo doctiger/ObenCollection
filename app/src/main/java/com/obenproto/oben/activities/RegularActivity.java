@@ -7,6 +7,7 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,9 +23,15 @@ import com.obenproto.oben.activities.base.BaseActivity;
 import com.obenproto.oben.api.APIClient;
 import com.obenproto.oben.api.domain.ObenPhrase;
 import com.obenproto.oben.api.domain.ObenUser;
+import com.obenproto.oben.api.domain.ObenUserAvatar;
 import com.obenproto.oben.api.response.GetAvatarResponse;
 import com.obenproto.oben.api.response.GetPhrasesResponse;
+import com.obenproto.oben.api.response.SaveUserAvatarResponse;
+import com.obenproto.oben.recorder.ExtAudioRecorder;
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.RequestBody;
 
+import java.io.File;
 import java.net.HttpURLConnection;
 
 import retrofit.Call;
@@ -172,6 +179,7 @@ public class RegularActivity extends BaseActivity implements View.OnClickListene
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        stopPlaying();
                         finish();
                         dialog.cancel();
                     }
@@ -198,7 +206,10 @@ public class RegularActivity extends BaseActivity implements View.OnClickListene
 
         @Override
         public int getCount() {
-            int recordCount = avatarData.getRecordCount();
+            int recordCount = 0;
+            if (avatarData != null) {
+                recordCount = avatarData.getRecordCount();
+            }
             return recordCount < LIMIT_COUNT ? recordCount + 1 : LIMIT_COUNT;
         }
 
@@ -221,7 +232,7 @@ public class RegularActivity extends BaseActivity implements View.OnClickListene
             TextView tvSentence = (TextView) convertView.findViewById(R.id.descriptionTxt);
             Button btnHearSample = (Button) convertView.findViewById(R.id.hearSampleBtn);
             Button btnListen = (Button) convertView.findViewById(R.id.listenBtn);
-            Button btnRec = (Button) convertView.findViewById(R.id.recBtn);
+            final Button btnRec = (Button) convertView.findViewById(R.id.recBtn);
 
             final Integer recordId = getItem(position);
             final ObenPhrase.PhraseObj phrase = phrasesData.getPhraseByRecordID(recordId);
@@ -231,12 +242,14 @@ public class RegularActivity extends BaseActivity implements View.OnClickListene
             btnHearSample.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    listenFrom(phrase.example);
+                    if (!isRecording) {
+                        listenFrom(phrase.example);
+                    }
                 }
             });
 
             // Setup function for LISTEN button.
-            if (avatarData.getSentence(recordId) == null) {
+            if (avatarData == null || avatarData.getSentence(recordId) == null) {
                 btnListen.setAlpha(0.1f);
                 btnListen.setEnabled(false);
             } else {
@@ -246,7 +259,9 @@ public class RegularActivity extends BaseActivity implements View.OnClickListene
             btnListen.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    listenFrom(avatarData.getSentence(recordId));
+                    if (!isRecording) {
+                        listenFrom(avatarData.getSentence(recordId));
+                    }
                 }
             });
 
@@ -254,7 +269,19 @@ public class RegularActivity extends BaseActivity implements View.OnClickListene
             btnRec.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    stopPlaying();
+                    if (hasGrantedAppPermissions()) {
+                        stopPlaying();
+                        isRecording = !isRecording;
+                        if (isRecording) {
+                            startRecording();
+                            btnRec.setText(R.string.STOP);
+                        } else {
+                            stopRecording(recordId);
+                            btnRec.setText(R.string.REC);
+                        }
+                    } else {
+                        requestPermissions();
+                    }
                 }
             });
 
@@ -270,6 +297,11 @@ public class RegularActivity extends BaseActivity implements View.OnClickListene
 
     private void stopPlaying() {
         if (mediaPlayer != null) {
+            try {
+                mediaPlayer.stop();
+            } catch (IllegalStateException e) {
+                e.printStackTrace();
+            }
             mediaPlayer.release();
             mediaPlayer = null;
         }
@@ -303,6 +335,63 @@ public class RegularActivity extends BaseActivity implements View.OnClickListene
                 e.printStackTrace();
             }
             return null;
+        }
+    }
+
+    boolean isRecording = false;
+    final String PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "/oben_audio.wav";
+    ExtAudioRecorder extAudioRecorder;
+
+    private void startRecording() {
+        // Uncompressed recording (WAV) : IF true - AMR
+        extAudioRecorder = ExtAudioRecorder.getInstanse(false);
+        extAudioRecorder.setOutputFile(PATH);
+        extAudioRecorder.prepare();
+        extAudioRecorder.start();
+    }
+
+    private void stopRecording(Integer recordID) {
+        extAudioRecorder.stop();
+        extAudioRecorder.release();
+
+        // Upload user recording.
+        File audioFileName = new File(PATH);
+        RequestBody requestBody = RequestBody.create(MediaType.parse("audio/wav"), audioFileName);
+        saveAvatar(recordID, requestBody);
+    }
+
+    private void saveAvatar(Integer recordID, RequestBody requestBody) {
+        ObenUser user = ObenUser.getSavedUser();
+        if (user != null) {
+            showProgress();
+            Call<SaveUserAvatarResponse> call = APIClient.getAPIService().saveUserAvatar(
+                    REGULAR_MODE, user.userId, recordID, requestBody, avatarID);
+            call.enqueue(new Callback<SaveUserAvatarResponse>() {
+                @Override
+                public void onResponse(Response<SaveUserAvatarResponse> response, Retrofit retrofit) {
+                    dismissProgress();
+                    if (response.code() == HttpURLConnection.HTTP_OK) {
+                        ObenUserAvatar savedAvatar = response.body().UserAvatar;
+                        if (savedAvatar.status.equalsIgnoreCase("SUCCESS")) {
+                            avatarID = savedAvatar.avatarId;
+                            getRecordedSentences();
+                        } else {
+                            helperUtils.showMessage(savedAvatar.message);
+                        }
+                    } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                        helperUtils.showMessage(R.string.unauthorized_toast);
+                        requestLogout();
+                    } else {
+                        helperUtils.showMessage("Network error");
+                    }
+                }
+
+                @Override
+                public void onFailure(Throwable t) {
+                    dismissProgress();
+                    helperUtils.showMessage(t.getLocalizedMessage());
+                }
+            });
         }
     }
 }

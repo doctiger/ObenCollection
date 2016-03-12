@@ -1,15 +1,13 @@
 package com.obenproto.oben.api;
 
-import com.obenproto.oben.api.domain.ObenPhrase;
 import com.obenproto.oben.api.response.GetAllUserAvatarsResponse;
 import com.obenproto.oben.api.response.GetAvatarResponse;
 import com.obenproto.oben.api.response.GetPhrasesResponse;
-import com.obenproto.oben.api.response.GetUserAvatarResponse;
 import com.obenproto.oben.api.response.LoginResponse;
 import com.obenproto.oben.api.response.ObenApiResponse;
+import com.obenproto.oben.api.response.SaveUserAvatarResponse;
 import com.squareup.okhttp.RequestBody;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import retrofit.Call;
@@ -32,33 +30,12 @@ public interface APIService {
 
     ////  Recall of save user avatar ( ​updated since 1.0 release ​)
     @Multipart
-    @POST("morphing/ws/MorphingService/saveUserAvatar")
-    Call<ObenApiResponse> saveUserAvatar(@Part("userId") int userId,
-                                         @Part("recordId") int recordId,
-                                         @Part("audioFile") RequestBody audioFile,
-                                         @Part("avatarId") Integer avatarId);
-
-    ////  Recall of save user avatar ( ​updated since 1.0 release ​)
-    ////  (don't exit the avatarID)Create the avatarID for regular, commercial and freestyle
-    @Multipart
-    @POST("morphing/ws/MorphingService/saveUserAvatar")
-    Call<ObenApiResponse> saveOriginalUserAvatar(@Part("userId") int userId,
-                                                 @Part("recordId") int recordId,
-                                                 @Part("audioFile") RequestBody audioFile);
-
-    ////  Recall of save regular avatar ( ​updated since 1.0 release ​)
-    @Multipart
-    @POST("morphing/ws/MorphingService/saveUserAvatar/mode/1")
-    Call<ObenApiResponse> saveRegularUserAvatar(@Part("userId") int userId,
-                                                @Part("recordId") int recordId,
+    @POST("morphing/ws/MorphingService/saveUserAvatar/mode/{mode}")
+    Call<SaveUserAvatarResponse> saveUserAvatar(@Path("mode") Integer mode,
+                                                @Part("userId") Integer userId,
+                                                @Part("recordId") Integer recordId,
                                                 @Part("audioFile") RequestBody audioFile,
-                                                @Part("avatarId") int avatarId);
-
-    @Multipart
-    @POST("morphing/ws/MorphingService/saveUserAvatar/mode/1")
-    Call<ObenApiResponse> saveOriginalRegularUserAvatar(@Part("userId") int userId,
-                                                        @Part("recordId") int recordId,
-                                                        @Part("audioFile") RequestBody audioFile);
+                                                @Part("avatarId") Integer avatarId);
 
     ////  Recall of save commercial avatar ( ​updated since 1.0 release ​)
     @Multipart
@@ -87,10 +64,6 @@ public interface APIService {
     Call<ObenApiResponse> saveOriginalFreestyleUserAvatar(@Part("userId") int userId,
                                                           @Part("recordId") int recordId,
                                                           @Part("audioFile") RequestBody audioFile);
-
-    ////    Recall of user avatar
-    @GET("morphing/ws/MorphingService/getUserAvatar/{userId}")
-    Call<GetUserAvatarResponse> getUserAvatar(@Path("userId") int userId);
 
     ////    Recall of user logout
     @POST("morphing/ws/MorphingService/logoutUser")

@@ -54,4 +54,5 @@
     <string name="Hear_Sample">Hear Sample</string>
     <string name="LISTEN">LISTEN</string>
     <string name="REC">REC</string>
+    <string name="STOP">STOP</string>
 </resources>
